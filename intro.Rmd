@@ -1,0 +1,181 @@
+---
+title: "Geovisualization and Spatial Analysis"
+author: "Kim Antunez & Timothée Giraud"
+date: "Massive spatial data: challenges in acquisition, treatment and use for territories"
+output: 
+  html_document: 
+    number_sections: yes
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Introducing the R Spatial Ecosystem (30 min)
+## The basics
+From sp, rgdal and rgeos to sf
+
+## Mapping
+
+  - static:
+      - ggplot2 + ggspatial
+      - tmap 
+      - **cartography**
+  - dynamic/interactiv
+      - leaflet
+      - mapview
+      
+## Spatial modelling and MISC
+See the CRAN task view spatial (https://cran.r-project.org/web/views/Spatial.html)
+
+
+# Exploration of sirene & osm db for restaurants
+
+See file data_prep.R for data extraction. 
+
+```{r}
+# spatial data management
+library(sf)
+# cartography
+library(cartography)
+# smooth density computation
+library(spatstat)
+library(raster)
+library(maptools)
+# interactive mapping
+library(mapview)
+```
+
+
+## Display points
+```{r}
+# load data
+adm <- readRDS("data/iris_p13.rds")
+feat_sir <- readRDS("data/sir_p13.rds")
+feat_osm <- readRDS("data/osm_p13.rds")
+
+nrow(feat_sir)
+nrow(feat_osm)
+
+par(mar = c(0,0,1.2,0), mfrow = c(1,2))
+
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+plot(st_geometry(feat_sir), col = "red", pch = 20, add=T, cex = 0.5)
+layoutLayer(title = "SIR", sources="", author="", scale = NULL, frame=FALSE)
+legend(x = "topright", legend = "= 1 restaurant", pch = 20, pt.cex = 0.5, cex = 0.7, col = "red")
+
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+plot(st_geometry(feat_osm), col = "red", pch = 20, add=T, cex = 0.5)
+layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=FALSE)
+```
+
+
+
+
+## Count points in admin units
+
+```{r}
+inter_osm <- st_intersects(adm, feat_osm)
+inter_sir <- st_intersects(adm, feat_sir)
+
+adm <- st_sf(adm[,1:2,drop = T], 
+             n_osm = sapply(X = inter_osm, FUN = length), 
+             n_sir = sapply(X = inter_sir, FUN = length), 
+             geometry = st_geometry(adm))
+
+par(mar = c(0,0,1.2,0), mfrow = c(1,2))
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+propSymbolsLayer(adm, var = "n_sir", inches = 0.1)
+layoutLayer(title = "SIR", sources="", author="", scale = NULL, frame=FALSE)
+
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+propSymbolsLayer(adm, var = "n_osm", inches = 0.1)
+layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=FALSE)
+
+
+# plot(adm$n_sir, adm$n_osm, asp = T, xlim = c(0,55), pch = 21, bg = "red")
+# text(adm$n_sir, adm$n_osm, labels = adm$CODE_IRIS, cex = 0.5, pos = 2)
+# x <-lm(formula = adm$n_osm~adm$n_sir)
+# abline(a = x$coefficients )
+
+
+```
+
+
+## count points in regular grid
+
+```{r}
+fufun2 <- function(feat,adm, cs = 500){
+  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
+  x <- st_intersects(grid, feat)
+  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
+  plot(adm$geometry, col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+  choroLayer(gg[gg$n>0,], var = "n", border= NA, breaks = c(1,4,6,9,12,14,17,19,22), 
+             col = carto.pal("wine.pal", 8), add=TRUE)
+}
+```
+
+```{r}
+par(mar = c(0,0,1.2,0), mfrow = c(2,3))
+fufun2(feat_sir, adm, 50)
+fufun2(feat_sir, adm, 100)
+fufun2(feat_sir, adm, 150)
+fufun2(feat_osm, adm, 50)
+fufun2(feat_osm, adm, 100)
+fufun2(feat_osm, adm, 150)
+
+
+```
+
+
+
+
+
+## smooth density analysis
+
+Define a function that compute smoothed restaurant density and map it.
+
+
+```{r}
+fufun <- function(feat, adm, title, sigma = 100,res = 50){
+  bb <- as(feat, "Spatial")
+  bbowin <- as.owin(as(adm, "Spatial"))
+  pts <- coordinates(bb)
+  p <- ppp(pts[,1], pts[,2], window=bbowin)
+  ds <- density.ppp(p, sigma = sigma, eps = res)
+  rasdens <- raster(ds) * 1000 * 1000
+  proj4string(rasdens) <- "+init=epsg:2154"
+  rasdens <- rasdens+1
+  bks <- getBreaks(values(rasdens), nclass = 12, method = "equal")
+  cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
+  plot(rasdens, breaks = bks, col=cols, add = T,legend=F)
+  legendChoro(pos = "topright",cex = 0.7, title.cex = 0.7,
+              title.txt = "resto per km2)",
+              breaks = bks-1, nodata = FALSE,values.rnd = 0,
+              col = cols)
+  layoutLayer(title = paste0(title), scale = .5,
+              tabtitle = TRUE, frame = FALSE,
+              author = "Map data © OpenStreetMap contributors, under CC BY SA. SIRENE 2018", 
+              sources = "cartography 2.0.2") 
+  return(invisible(rasdens))
+}
+
+```
+
+
+
+```{r, fig.width=10}
+par(mar = c(0,0,1.2,0), mfrow = c(2,3))
+fufun(feat_sir, adm, "SIR 50", 50, 20)
+fufun(feat_sir, adm, "SIR 100", 100, 20)
+fufun(feat_sir, adm, "SIR 250", 250, 20)
+fufun(feat_osm, adm, "OSM 50", 50, 20)
+fufun(feat_osm, adm, "OSM 100", 100, 20)
+fufun(feat_osm, adm, "OSM 250", 250, 20)
+```
+
+
