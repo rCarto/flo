@@ -1,0 +1,12 @@
+base
+sf
+cartography
+spatstat.data
+nlme
+rpart
+spatstat
+sp
+raster
+maptools
+mapview
+knitr

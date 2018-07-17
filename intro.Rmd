@@ -5,18 +5,146 @@ date: "Massive spatial data: challenges in acquisition, treatment and use for te
 output: 
   html_document: 
     number_sections: yes
+    theme: journal
 ---
 
 
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+## Global options
+options(max.print="90")
+opts_chunk$set(echo=TRUE,
+	             cache=TRUE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=90)
+options(width = 90)
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# no margins
+knit_hooks$set(nm = function(before, options, envir){
+  if (before){
+    par(mar=c(0,0,0,0))
+  } 
+})
+
+# title margins
+knit_hooks$set(sm = function(before, options, envir){
+  if (before){
+    par(mar=c(0,0,1.2,0))
+  } 
+})
+
+
 ```
-
 
 # Introducing the R Spatial Ecosystem (30 min)
 ## The basics
-From sp, rgdal and rgeos to sf
+
+### rgdal, sp, rgeos
+
+* `rgdal` : interface entre R et les librairies GDAL ([Geospatial Data Abstraction Library](http://www.gdal.org/)) et [PROJ4](https://github.com/OSGeo/proj.4).
+
+* `sp` : classes et methodes pour les données spatiales dans R.
+
+* `rgeos` : accès à la librairie d'opérations spatiales GEOS ([Geometry Engine - Open Source](http://trac.osgeo.org/geos/)) :  area, perimeter, distances, dissolve, buffer, overlap, union, contains...
+
+### sf
+
+* Les fonctionnalités de `sp`, `rgeos` et `rgdal` dans un package unique. 
+
+* Manipulation plus aisée, objets plus simples
+
+* Auteur principal et *maintainer* : Edzer Pebesma (auteur de `sp`)
+
+* Compatible avec les syntaxes *pipe* et les opérateurs du `tidyverse`.
+
+
+Format des objets spatiaux `sf`
+
+<img src="./img/sf.png" alt="format sf" style="border:0px"/>
+
+
+Import de données
+
+```{r}
+library(sf)
+mtq <- st_read("data/mtq/martinique.shp")
+```
+
+
+Affichage de données
+
+```{r, nm=TRUE}
+plot(st_geometry(mtq))
+```
+
+Extraire les centroïdes
+
+```{r, nm=TRUE}
+mtq_c <- st_centroid(mtq)
+plot(st_geometry(mtq))
+plot(st_geometry(mtq_c), add=TRUE, cex=1.2, col="red", pch=20)
+```
+
+Construire une matrice de distances
+
+```{r, nm=TRUE}
+mat <- st_distance(x=mtq_c,y=mtq_c)
+mat[1:5,1:5]
+```
+
+Agréger des polygones
+```{r, nm=TRUE}
+mtq_u <- st_union(mtq)
+plot(st_geometry(mtq), col="lightblue")
+plot(st_geometry(mtq_u), add=T, lwd=2, border = "red")
+```
+
+
+Construire une zone tampon
+
+```{r, nm=TRUE}
+mtq_b <- st_buffer(x = mtq_u, dist = 5000)
+plot(st_geometry(mtq), col="lightblue")
+plot(st_geometry(mtq_u), add=T, lwd=2)
+plot(st_geometry(mtq_b), add=T, lwd=2, border = "red")
+
+```
+
+
+Réaliser une intersection 
+
+```{r, nm=TRUE}
+m <- rbind(c(700015,1624212), c(700015,1641586), c(719127,1641586), 
+           c(719127,1624212), c(700015,1624212))
+p <- st_sf(st_sfc(st_polygon(list(m))), crs = st_crs(mtq))
+plot(st_geometry(mtq))
+plot(p, border="red", lwd=2, add=T)
+```
+
+
+```{r, nm=TRUE, warning=F}
+mtq_z <- st_intersection(x = mtq, y = p)
+plot(st_geometry(mtq))
+plot(st_geometry(mtq_z), col="red", border="green", add=T)
+```
+
+
+Construire des polygones de Voronoi  
+<small>google: "st_voronoi R sf" (https://github.com/r-spatial/sf/issues/474 & https://stackoverflow.com/questions/45719790/create-voronoi-polygon-with-simple-feature-in-r)
+</small>
+```{r, nm=TRUE}
+mtq_v <- st_voronoi(x = st_union(mtq_c))
+mtq_v <- st_intersection(st_cast(mtq_v), st_union(mtq))
+mtq_v <- st_join(x = st_sf(mtq_v), y = mtq_c, join=st_intersects)
+mtq_v <- st_cast(mtq_v, "MULTIPOLYGON")
+plot(st_geometry(mtq_v), col='lightblue')
+```
+
+
 
 ## Mapping
 
@@ -24,12 +152,12 @@ From sp, rgdal and rgeos to sf
       - ggplot2 + ggspatial
       - tmap 
       - **cartography**
-  - dynamic/interactiv
+  - dynamic/interactive
       - leaflet
       - mapview
       
 ## Spatial modelling and MISC
-See the CRAN task view spatial (https://cran.r-project.org/web/views/Spatial.html)
+[CRAN Task View: Analysis of Spatial Data](https://CRAN.R-project.org/view=Spatial)
 
 
 # Exploration of sirene & osm db for restaurants
@@ -51,7 +179,7 @@ library(mapview)
 
 
 ## Display points
-```{r}
+```{r, cache=TRUE}
 # load data
 adm <- readRDS("data/iris_p13.rds")
 feat_sir <- readRDS("data/sir_p13.rds")
@@ -77,7 +205,7 @@ layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=F
 
 ## Count points in admin units
 
-```{r}
+```{r, cache=TRUE}
 inter_osm <- st_intersects(adm, feat_osm)
 inter_sir <- st_intersects(adm, feat_sir)
 
@@ -105,9 +233,37 @@ layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=F
 ```
 
 
+## Interactive visualisation
+
+Explore datasets interactively
+
+The default is not bad:
+```{r, cache=TRUE}
+mapview(feat_sir) + mapview(feat_osm, col.regions = "red")
+```
+
+mapview is hightly customizable:
+
+```{r, cache=TRUE}
+mapview(feat_sir, map.types = "OpenStreetMap", col.regions = "#940000", 
+        label = paste(feat_sir$L2_NORMALISEE, feat_sir$NOMEN_LONG, sep=" - "),
+        color = "white", legend = TRUE, layer.name = "SIRENE", 
+        homebutton = FALSE, lwd = 0.5) +
+  mapview(feat_osm, col.regions = "#000094", color = "white", legend = TRUE, 
+          label = feat_osm$name,
+          lwd = 0.5, layer.name = "OSM",  homebutton = FALSE)
+ 
+```
+
+
+
+
+
+
+
 ## count points in regular grid
 
-```{r}
+```{r, cache=TRUE}
 fufun2 <- function(feat,adm, cs = 500){
   grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
   x <- st_intersects(grid, feat)
@@ -118,7 +274,8 @@ fufun2 <- function(feat,adm, cs = 500){
 }
 ```
 
-```{r}
+
+```{r, cache=TRUE}
 par(mar = c(0,0,1.2,0), mfrow = c(2,3))
 fufun2(feat_sir, adm, 50)
 fufun2(feat_sir, adm, 100)
@@ -139,7 +296,7 @@ fufun2(feat_osm, adm, 150)
 Define a function that compute smoothed restaurant density and map it.
 
 
-```{r}
+```{r, cache=TRUE}
 fufun <- function(feat, adm, title, sigma = 100,res = 50){
   bb <- as(feat, "Spatial")
   bbowin <- as.owin(as(adm, "Spatial"))
@@ -168,7 +325,7 @@ fufun <- function(feat, adm, title, sigma = 100,res = 50){
 
 
 
-```{r, fig.width=10}
+```{r, cache=TRUE, fig.width=10}
 par(mar = c(0,0,1.2,0), mfrow = c(2,3))
 fufun(feat_sir, adm, "SIR 50", 50, 20)
 fufun(feat_sir, adm, "SIR 100", 100, 20)
