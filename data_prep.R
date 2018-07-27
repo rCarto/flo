@@ -172,10 +172,10 @@ cafe2 <- res$osm_polygons
 st_geometry(cafe2) <- st_centroid(st_geometry(cafe2))
 
 
-osm_31 <- rbind(restau1[, c("osm_id", "name")], restau2[, c("osm_id", "name")], 
-             restau3[, c("osm_id", "name")], fast1[, c("osm_id", "name")], 
-             fast2[, c("osm_id", "name")], 
-             cafe1[, c("osm_id", "name")], cafe2[, c("osm_id", "name")])
+osm_31 <- rbind(restau1[, c("osm_id", "name","amenity")], restau2[, c("osm_id", "name","amenity")], 
+             restau3[, c("osm_id", "name","amenity")], fast1[, c("osm_id", "name","amenity")], 
+             fast2[, c("osm_id", "name","amenity")], 
+             cafe1[, c("osm_id", "name","amenity")], cafe2[, c("osm_id", "name","amenity")])
 osm_31 <- st_transform(osm_31, 2154)
 osm_31 <- st_intersection(osm_31, iris_31)
 osm_31 <- st_jitter(osm_31, 1)

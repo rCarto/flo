@@ -209,7 +209,7 @@ C'est la fonction `propSymbolsLayer` qui permet de dessiner des ronds proportion
 
 ```{r, nm=TRUE}
 library(cartography)
-plot(st_geometry(mix_31), col = "ivory1", border = "ivory3",lwd =0.5)
+plot(st_geometry(mix_31), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
 propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
 ```
 
@@ -218,16 +218,97 @@ propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
 
 Réaliser une carte avec tous les packages présentés par Timothée. En attente de la partie de Timothée sur le sujet pour m'en inspirer !
 
-# Exercices 3 à X : Traitements avancés de cartographie
-
-L'idée ici serait de faire plusieurs exercices courts à la fin (pour les plus avancés ?) sur des choses marrantes à faire, indépendamment de ce que l'on montrerait en "cours".
-J'ai pensé à quelques idées : 
-
- * un cartogramme (je crois que c'est le nom scientifique pour anamorphose, tu me confirmeras !)
- * une carte avec variable à trois couleurs (ça aussi ça doit avoir un nom mais mes connaissances s'arrêtent là ;) comme [ici](https://github.com/ikashnitsky/the-lancet-2018)
+# Exercice 3 : cartogramme
+Pour les exos de la fin, une idée pourrait être de faire plusieurs exercices courts à la fin (pour les plus avancés ?) sur des choses marrantes à faire, indépendamment de ce que l'on montrerait en "cours".
+J'ai pensé à quelques idées ici...
 
 
+1. Réaliser un cartogramme du département 31 au niveau intercommunal proportionnellement aux nombres de restaurants (données SIRENE). 
 
+```{r, nm=TRUE}
+#library(cartogram)
+#cartogramme <- cartogram_cont(epci_31, "nb_of_rest", itermax = 5, maxSizeError = 1)
+# Erreur... Si tu comprends pourquoi Timothée...
+```
+
+# Exercice 4 : carte tricolore
+
+1. Réaliser une carte tricolore qui représente les iris de Toulouse en fonction de si elles sont plutôt dotées en restaurants, cafés ou fast foods (données OSM)
+
+<center><img src="./img/tricolore.png" alt="legende tricolore" style="border:0px" height="50%" width="50%"/></center>
+
+
+```{r, nm=TRUE}
+bdd <- readRDS("data/osm_31.rds") %>% 
+  filter(INSEE_COM=="31555")
+
+bdd_restaurant <- bdd %>% filter(amenity=="restaurant") %>%  
+  group_by(CODE_IRIS) %>% 
+   summarize(restaurant= n()) %>% 
+  st_set_geometry(NULL)
+
+bdd_fast_food <- bdd %>% filter(amenity=="fast_food") %>%  
+  group_by(CODE_IRIS) %>% 
+   summarize(fast_food= n()) %>% 
+  st_set_geometry(NULL)
+
+bdd_cafe <- bdd %>% filter(amenity=="cafe") %>%  
+  group_by(CODE_IRIS) %>% 
+   summarize(cafe= n()) %>% 
+  st_set_geometry(NULL)
+
+couche_carto <- left_join(iris_31 %>%  filter(INSEE_COM=="31555"), 
+                          bdd_restaurant,
+                          by=c("CODE_IRIS"="CODE_IRIS")
+) %>% 
+left_join(bdd_fast_food,by=c("CODE_IRIS"="CODE_IRIS")) %>% 
+left_join(bdd_cafe,by=c("CODE_IRIS"="CODE_IRIS")) %>% 
+  replace(is.na(.),0) %>% 
+  mutate(part_restaurant = restaurant / (restaurant + fast_food + cafe), 
+         part_fast_food = fast_food / (restaurant + fast_food + cafe), 
+         part_cafe = cafe / (restaurant + fast_food + cafe)
+         )
+
+# devtools::install_version("ggplot2", version = "2.2.1", repos = "http://cran.us.r-project.org")
+# The recent update of ggplot2 to version 3.0.0 caused ggtern to break and in turn tricolore. We're working on a fix.In the meantime, in order to use tricolore you must revert to ggplot version 2.2.1.
+# library(tricolore)
+# tric <- Tricolore(couche_carto %>% st_set_geometry(NULL), 'part_restaurant', 'part_fast_food', 'part_cafe', center = NA)
+#saveRDS(object = tric, file = "data/tric.rds")
+tric <- readRDS("data/tric.rds") 
+
+# ancienne version ggplot2 issue à régler
+#tric$legend
+
+
+couche_carto <- bind_cols(couche_carto,tric$hexsrgb %>% as_data_frame() %>% replace(is.na(.),"#FFFFFFFF"))
+
+library(ggplot2)
+q <- ggplot(couche_carto) +
+    geom_sf(aes(fill = value)) +
+  scale_fill_identity() 
+
+q
+
+####### AVEC SP
+# couche_carto_sp <- merge(fortify(
+#   rgeos::gBuffer(sf:::as_Spatial(couche_carto),
+#   width = 0, byid = TRUE), region = "CODE_IRIS"), couche_carto %>% st_set_geometry(NULL), by.x = "id",
+#   by.y = "CODE_IRIS", all.x = TRUE)
+
+# q <- ggplot(couche_carto_sp) +
+#   geom_polygon(aes(long, lat, group = group, fill = value),
+#                data = couche_carto_sp) +
+#   scale_fill_identity() +
+#   coord_fixed()
+  # + xlim(c(565000,590000)) + 
+  # annotation_custom(
+  #   ggplotGrob(
+  #     tric$legend +
+  #       theme(plot.background = element_rect(fill = NA, color = NA))
+  #   ),
+  #   xmin = 575000, xmax = 595000, ymin = 6274000, ymax = 6284000) 
+
+```
 
 --------------------------------------------
 
