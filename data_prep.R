@@ -26,6 +26,8 @@ iris_p14 <- iris_p14[,c("CODE_IRIS", "P14_POP")]
 iris_31 <- iris_fra[substr(iris_fra$INSEE_COM, 1,2)=="31",]
 iris_31 <- merge(iris_31, iris_data, by.x = "CODE_IRIS", by.y = "IRIS", all.x = T)
 iris_31 <- iris_31[,c("CODE_IRIS", "P14_POP","INSEE_COM")]
+iris_31[which(iris_31$INSEE_COM=="31307"),"INSEE_COM"] <- "31412" #erreur de code commune dans la table iris (fusion non prise en compte)
+
 
 iris_tlse <- iris_fra[iris_fra$INSEE_COM=="31555",]
 iris_tlse <- merge(iris_tlse, iris_data, by.x = "CODE_IRIS", by.y = "IRIS", all.x = T)
@@ -69,14 +71,13 @@ sir_p14 <- st_transform(sir_p14, 2154)
 sir_p14 <- st_jitter(sir_p14, 1)
 
 
-sir_31 <- read.csv('data-raw/geo-sirene_31.csv', stringsAsFactors = F)
+sir_31 <- read.csv('data-raw/geo-sirene_31.csv', stringsAsFactors = F, colClasses=c("COMET"="character"))
 sir_31 <- sir_31[substr(sir_31$APET700,1,4)==5610,]
 sir_31 <- st_as_sf(sir_31, coords=c("longitude", "latitude"), crs = 4326, 
                    stringsAsFactors = FALSE)
 sir_31 <- st_transform(sir_31, 2154)
 sir_31 <- st_jitter(sir_31, 1)
-sir_tlse <- sir_31[sir_31$COMET==555,]
-
+sir_tlse <- sir_31[sir_31$COMET=="555",]
 
 
 ####### OSM extact
