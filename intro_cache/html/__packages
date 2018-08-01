@@ -1,6 +1,10 @@
 base
+knitr
+rmdformats
 sf
 cartography
+cartogram
+SpatialPosition
 spatstat.data
 nlme
 rpart
@@ -9,4 +13,3 @@ sp
 raster
 maptools
 mapview
-knitr
