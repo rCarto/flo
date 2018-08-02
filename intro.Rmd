@@ -45,13 +45,11 @@ knit_hooks$set(sm = function(before, options, envir){
 
 ```
 
-# Introducing the R Spatial Ecosystem {.tabset}
-
-## The basics  {.tabset}
+# The R Spatial Ecosystem {.tabset}
 
 A few main packages are dedicated to spatial data handling like import/export, display, geoprocessing, spatial ststistics. 
 
-### "Historical" Packages
+## "Historical" Packages
 
 * `rgdal`: interface between R and GDAL ([Geospatial Data Abstraction Library](http://www.gdal.org/)) and [PROJ4](https://github.com/OSGeo/proj.4) libraries.
 
@@ -61,7 +59,7 @@ A few main packages are dedicated to spatial data handling like import/export, d
 
 These packages are still widely used. 
 
-### Simple Features for R 
+## Simple Features for R 
 
 * `sp`, `rgeos` and `rgdal` functionnalities in one package. 
 
@@ -75,20 +73,21 @@ These packages are still widely used.
 
 * Website: [Simple Features for R](https://r-spatial.github.io/sf/index.html)
 
-**sf Objects Data Structure**
+</br>
+**sf objects data structure:**
 
 <img src="./img/sf.png" alt="format sf" width="800">
 
-### Using `sf` {.tabset}
+## Using `sf` {.tabset}
 
-#### Data Import {.tabset}
+### Data Import {.tabset}
 ```{r}
 library(sf)
 mtq <- st_read("data/mtq/martinique.shp")
 ```
 
 
-#### Data Display
+### Data Display
 Default
 ```{r, nm=TRUE}
 plot(mtq)
@@ -100,20 +99,20 @@ plot(st_geometry(mtq))
 ```
 
 
-#### Centroids Extraction
+### Centroids Extraction
 ```{r, nm=TRUE}
 mtq_c <- st_centroid(mtq)
 plot(st_geometry(mtq))
 plot(st_geometry(mtq_c), add=TRUE, cex=1.2, col="red", pch=20)
 ```
 
-#### Distance Matrix
+### Distance Matrix
 ```{r, nm=TRUE}
 mat <- st_distance(x=mtq_c,y=mtq_c)
 mat[1:5,1:5]
 ```
 
-#### Polygons Aggregation 
+### Polygons Aggregation 
 ```{r, nm=TRUE}
 mtq_u <- st_union(mtq)
 plot(st_geometry(mtq), col="lightblue")
@@ -121,7 +120,7 @@ plot(st_geometry(mtq_u), add=T, lwd=2, border = "red")
 ```
 
 
-#### Buffer Zone
+### Buffer Zone
 ```{r, nm=TRUE}
 mtq_b <- st_buffer(x = mtq_u, dist = 5000)
 plot(st_geometry(mtq), col="lightblue")
@@ -131,7 +130,7 @@ plot(st_geometry(mtq_b), add=T, lwd=2, border = "red")
 ```
 
 
-#### Polygon Intersection 
+### Polygon Intersection 
 ```{r, nm=TRUE}
 m <- rbind(c(700015,1624212), c(700015,1641586), c(719127,1641586), 
            c(719127,1624212), c(700015,1624212))
@@ -147,7 +146,7 @@ plot(st_geometry(mtq_z), col="red", border="green", add=T)
 ```
 
 
-#### Voronoi Polygons  
+### Voronoi Polygons  
 <small>google: "st_voronoi R sf" (https://github.com/r-spatial/sf/issues/474 & https://stackoverflow.com/questions/45719790/create-voronoi-polygon-with-simple-feature-in-r)
 </small>
 ```{r, nm=TRUE}
@@ -160,9 +159,9 @@ plot(st_geometry(mtq_v), col='lightblue')
 
 
 
-## Mapping  {.tabset}
+# Maps with R  {.tabset}
 
-### Static Maps {.tabset}
+## Static Maps {.tabset}
 
 Several solutions are available:
 
@@ -171,10 +170,9 @@ Several solutions are available:
 - `cartography` is based on base graphics and allow most of basic and advanced cartographic representations.   
 Here we will focus on `cartography`. <small><small>Full disclosure: the speaker is the maintener of cartography.</small></small>
 
-### Using `cartography` {.tabset}
+## `cartography` {.tabset}
 
-
-#### Data Preparation
+### Data Preparation
 
 ```{r, eval=TRUE}
 library(sf)
@@ -192,7 +190,7 @@ sm <- merge(sm, csp, by="INSEE_COM", all.x=TRUE)
 ```
 
 
-#### Proportionnal symbols
+### Proportional symbols
 ```{r}
 library(cartography)
 # Map of active population
@@ -224,7 +222,7 @@ layoutLayer(title = "Workforce in Seine-Maritime",
 
 ```
 
-#### Typology Map
+### Typology Map
 
 ```{r, fig.height=4.75}
 par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
@@ -250,7 +248,7 @@ layoutLayer(title = "Workforce Distribution in Seine-Maritime",
 ```
 
 
-#### Choropleth Map
+### Choropleth Map
 
 ```{r, fig.height=4.75}
 
@@ -264,8 +262,8 @@ plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =
 choroLayer(sm, var = "pcad", breaks = bks, 
            col = cols, border = "grey80", 
            lwd = 0.4, legend.pos = "topleft", 
-           legend.title.txt = "Part des cadres\n(en %)", add=T)
-layoutLayer(title = "Les cadres", 
+           legend.title.txt = "Share of managers\n(en %)", add=T)
+layoutLayer(title = "Managers", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
@@ -288,8 +286,8 @@ plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =
 choroLayer(sm_c1, var = "pcad", breaks = bks, 
            col = cols, border = "grey80", 
            lwd = 0.4, legend.pos = "topleft", 
-           legend.title.txt = "Part des cadres\n(en %)", add=T)
-layoutLayer(title = "Les cadres", 
+           legend.title.txt = "Share of managers\n(en %)", add=T)
+layoutLayer(title = "Managers", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
@@ -299,12 +297,17 @@ north(pos = "topright", south = TRUE)
 ```
 
 
-#### Gridded Map
+### Gridded Map
 These maps may allow to hide or, at least, diminish the MAUP. 
 ```{r, fig.height=4.75, cache = T}
 sqrt(quantile(st_area(sm), .9))
+```
+
+
+```{r, fig.height=4.75, cache = T}
+
 # Grid map
-grid <- getGridLayer(x = sm, cellsize = 3904*3904, 
+grid <- getGridLayer(x = sm, cellsize = 3900*3900, 
                      type = "regular", var = c('cad', 'act'))
 grid$pcad <- 100*grid$cad/grid$act
 par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
@@ -312,8 +315,8 @@ plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =
 choroLayer(grid, var = "pcad", breaks=bks, 
            col = cols, border = "grey80", 
            lwd = 0.4, legend.pos = "topleft", 
-           legend.title.txt = "Part des cadres\n(en %)", add=T)
-layoutLayer(title = "Les cadres", 
+           legend.title.txt = "Share of managers\n(en %)", add=T)
+layoutLayer(title = "Managers", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
@@ -324,7 +327,7 @@ north(pos = "topright", south = TRUE)
 ```
 
 
-#### Smoothed Map
+### Smoothed Map
 
 ```{r, fig.height=4.75, cache = T}
 # Smooth Map
@@ -334,11 +337,11 @@ plot(st_geometry(dep), col = "ivory", border="ivory3",
      xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
 smoothLayer(x = grid, var = "cad100", var2 = "act", 
             typefct = "exponential", 
-            span = 3900, beta = 2, breaks = bks, col = cols,
+            span = 4000, beta = 2, breaks = bks, col = cols,
             legend.pos = "topleft", mask = st_buffer(sm, 0),
-            legend.title.txt = "Part des cadres\n(en %)*", 
+            legend.title.txt = "Share of managers\n(%)*", 
             border = "grey90", lwd = 0.2, add=T)
-layoutLayer(title = "Les cadres", 
+layoutLayer(title = "Managers", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
@@ -353,21 +356,21 @@ text(x = 518000, y = 6921123, font = 3, cex = 0.8,
 
 
 
-### Dynamic/interactive maps  {.tabset}
+## Dynamic/interactive maps  {.tabset}
 
 The 2 main packages dedicated to interactive mapping are leaflet and mapview. 
 
-#### leaflet
+### leaflet
 
-#### mapview
+### mapview
 
 
 
-## Spatial modelling and MISC
-[CRAN Task View: Analysis of Spatial Data](https://CRAN.R-project.org/view=Spatial)
 
 
 # Exploration of sirene & osm db for restaurants  {.tabset}
+
+[CRAN Task View: Analysis of Spatial Data](https://CRAN.R-project.org/view=Spatial)
 
 See file data_prep.R for data extraction. 
 
@@ -385,7 +388,7 @@ library(mapview)
 ```
 
 
-## Display points
+## Display Points
 ```{r, cache=TRUE}
 # load data
 adm <- readRDS("data/iris_p13.rds")
@@ -410,7 +413,9 @@ layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=F
 
 
 
-## Count points in admin units
+## Count Points in Units
+
+### In admin units
 
 ```{r, cache=TRUE}
 inter_osm <- st_intersects(adm, feat_osm)
@@ -440,35 +445,7 @@ layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=F
 ```
 
 
-## Interactive visualisation
-
-Explore datasets interactively
-
-The default is not bad:
-```{r, cache=TRUE}
-mapview(feat_sir) + mapview(feat_osm, col.regions = "red")
-```
-
-mapview is hightly customizable:
-
-```{r, cache=TRUE}
-mapview(feat_sir, map.types = "OpenStreetMap", col.regions = "#940000", 
-        label = paste(feat_sir$L2_NORMALISEE, feat_sir$NOMEN_LONG, sep=" - "),
-        color = "white", legend = TRUE, layer.name = "SIRENE", 
-        homebutton = FALSE, lwd = 0.5) +
-  mapview(feat_osm, col.regions = "#000094", color = "white", legend = TRUE, 
-          label = feat_osm$name,
-          lwd = 0.5, layer.name = "OSM",  homebutton = FALSE)
- 
-```
-
-
-
-
-
-
-
-## count points in regular grid
+### In a regular grid
 
 ```{r, cache=TRUE}
 fufun2 <- function(feat,adm, cs = 500){
@@ -490,17 +467,40 @@ fufun2(feat_sir, adm, 150)
 fufun2(feat_osm, adm, 50)
 fufun2(feat_osm, adm, 100)
 fufun2(feat_osm, adm, 150)
-
-
 ```
 
 
+## Interactive Visualisation
+
+Explore datasets interactively
+
+The default is not bad:
+```{r, cache=TRUE}
+mapview(feat_sir) + mapview(feat_osm, col.regions = "red")
+```
+
+`mapview` allow hightly customizable maps:
+
+```{r, cache=TRUE}
+mapview(feat_sir, map.types = "OpenStreetMap", col.regions = "#940000", 
+        label = paste(feat_sir$L2_NORMALISEE, feat_sir$NOMEN_LONG, sep=" - "),
+        color = "white", legend = TRUE, layer.name = "SIRENE", 
+        homebutton = FALSE, lwd = 0.5) +
+  mapview(feat_osm, col.regions = "#000094", color = "white", legend = TRUE, 
+          label = feat_osm$name,
+          lwd = 0.5, layer.name = "OSM",  homebutton = FALSE)
+ 
+```
 
 
+These maps, as appealing as they seem to be, are not really suitable for displaying geostatistical info. 
+For data exploration they are really useful. 
 
-## smooth density analysis
+
+## Smooth Density Analysis
 
 Define a function that compute smoothed restaurant density and map it.
+KDE method
 
 
 ```{r, cache=TRUE}
@@ -543,6 +543,7 @@ fufun(feat_osm, adm, "OSM 250", 250, 20)
 ```
 
 
+# 
 
 --------------------------------------------
 
