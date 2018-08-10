@@ -1,0 +1,895 @@
+﻿<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Kim Antunez &amp; Timothée Giraud" />
+
+
+<title>LET’S PRACTICE Geovisualization and Spatial Analysis</title>
+
+<script src="exercises_files/jquery-1.12.4/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="exercises_files/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
+<script src="exercises_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="exercises_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="exercises_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<link href="exercises_files/tutorial-0.3.0.9000/css/style.css" rel="stylesheet" />
+<script src="exercises_files/navigation-1.1/tabsets.js"></script>
+<link href="exercises_files/ionicons-2.0.1/css/ionicons.min.css" rel="stylesheet" />
+<script src="exercises_files/htmlwidgets-1.2/htmlwidgets.js"></script>
+<link href="exercises_files/leaflet-0.7.7/leaflet.css" rel="stylesheet" />
+<script src="exercises_files/leaflet-0.7.7/leaflet.js"></script>
+<link href="exercises_files/leafletfix-1.0.0/leafletfix.css" rel="stylesheet" />
+<link href="exercises_files/leaflet-label-0.2.2/leaflet.label.css" rel="stylesheet" />
+<script src="exercises_files/leaflet-label-0.2.2/leaflet.label.js"></script>
+<script src="exercises_files/Proj4Leaflet-0.7.2/proj4-compressed.js"></script>
+<script src="exercises_files/Proj4Leaflet-0.7.2/proj4leaflet.js"></script>
+<script src="exercises_files/leaflet-binding-1.1.0/leaflet.js"></script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; background-color: #dddddd; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { font-weight: bold; } /* Keyword */
+code > span.dt { color: #800000; } /* DataType */
+code > span.dv { color: #0000ff; } /* DecVal */
+code > span.bn { color: #0000ff; } /* BaseN */
+code > span.fl { color: #800080; } /* Float */
+code > span.ch { color: #ff00ff; } /* Char */
+code > span.st { color: #dd0000; } /* String */
+code > span.co { color: #808080; font-style: italic; } /* Comment */
+code > span.al { color: #00ff00; font-weight: bold; } /* Alert */
+code > span.fu { color: #000080; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #ff0000; font-weight: bold; } /* Warning */
+code > span.cn { color: #000000; } /* Constant */
+code > span.sc { color: #ff00ff; } /* SpecialChar */
+code > span.vs { color: #dd0000; } /* VerbatimString */
+code > span.ss { color: #dd0000; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { } /* Variable */
+code > span.cf { } /* ControlFlow */
+code > span.op { } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { font-weight: bold; } /* Preprocessor */
+code > span.at { } /* Attribute */
+code > span.do { color: #808080; font-style: italic; } /* Documentation */
+code > span.an { color: #808080; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #808080; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #808080; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="css_file.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">LET’S PRACTICE Geovisualization and Spatial Analysis</h1>
+<h4 class="author"><em>Kim Antunez &amp; Timothée Giraud</em></h4>
+<h4 class="date"><em>Massive spatial data: challenges in acquisition, treatment and use for territories</em></h4>
+
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#exercice-1-manipuler-les-objets-sf-et-des-data.frames-associes">Exercice 1 : Manipuler les objets sf et des data.frames associés</a></li>
+<li><a href="#exercice-2-cartographie-statique-et-interactive">Exercice 2 : Cartographie statique et interactive</a></li>
+<li><a href="#exercice-3-cartogramme">Exercice 3 : Cartogramme</a></li>
+<li><a href="#exercice-4-linemap">Exercice 4 : Linemap</a></li>
+<li><a href="#exercice-5-carte-tricolore">Exercice 5 : Carte tricolore</a></li>
+</ul>
+</div>
+
+<div id="exercice-1-manipuler-les-objets-sf-et-des-data.frames-associes" class="section level1">
+<h1>Exercice 1 : Manipuler les objets sf et des data.frames associés</h1>
+<ol style="list-style-type: decimal">
+<li>Charger la couche cartographique des iris du département 31 “iris_31.rds” dans R. Est-ce que la fonction <code>sf::st_read</code> fonctionnerait également ? Pourquoi ?</li>
+</ol>
+<p><details> <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary> Utilisez la fonction <code>readRDS</code>. </details></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-1">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-1" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sf)
+iris_31 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../data/iris_31.rds&quot;</span>)
+<span class="co"># iris_31 &lt;- st_read(&quot;../data/iris_31.rds&quot;)</span></code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-2">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-2" class="panel-collapse collapse">
+<div class="panel-body">
+Cela ne fonctionne pas car il ne s’agit pas d’un shapefile mais d’un fichier déjà mis au format R. Il suffit alors simplement de le charger avec la fonction readRDS.
+</div>
+</div>
+</div>
+</div>
+<ol start="2" style="list-style-type: decimal">
+<li>Afficher simplement le fond de carte du département 31 avec l’instruction <code>plot(iris_31)</code>. Que remarquez-vous ?</li>
+</ol>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-3">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-3" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(iris_31)</code></pre></div>
+<p><img src="exercises_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># On remarque que R effectue un graphique par variable présent dans le fichier sf, ici 3.</span></code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<ol start="3" style="list-style-type: decimal">
+<li>Quel est le rôle de la fonction <code>sf::st_geometry</code> ? Quelle solution proposez-vous alors ?</li>
+</ol>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-4">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-4" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># ?sf::st_geometry</span>
+<span class="co"># Cette fonction permet d&#39;isoler les informations de l&#39;objet sf relatives à sa géométrie et d&#39;ainsi mettre de côté les autres variables ici CODE_IRIS, P14_POP et INSEE_COM</span>
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(iris_31))</code></pre></div>
+<img src="exercises_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+</div>
+</div>
+</div>
+</div>
+<ol start="4" style="list-style-type: decimal">
+<li>En quelle projection est la couche cartographique ? Cartographiez-la dans une autre projection.</li>
+</ol>
+<p><details> <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary> Utilisez la fonction <code>sf::st_crs</code> pour deviner la projection et <code>sf::st_transform</code> pour changer la projection. Vous pouvez par exemple tester l’Azimuthal Equidistant projection telle que “crs=”+proj=aeqd +lat_0=90 +lon_0=0&quot; pour voir une nette différence. </details></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-5">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-5" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#?st_crs</span>
+<span class="kw">st_crs</span>(iris_31)
+<span class="kw">par</span>(<span class="dt">mar =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(iris_31))
+<span class="kw">plot</span>(<span class="kw">st_transform</span>(<span class="kw">st_geometry</span>(iris_31), <span class="dt">crs=</span><span class="st">&quot;+proj=aeqd +lat_0=90 +lon_0=0&quot;</span>))</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><img src="exercises_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<ol start="5" style="list-style-type: decimal">
+<li>A partir de la couche “iris_31”, créez une couche cartographique appelée “com_31” qui correspond aux communes du département 31. Gardez également dans cette nouvelle couche les informations sur la population présente dans chaque commune.</li>
+</ol>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 236, 139, 0.3); border:2px solid rgba(255, 236, 139, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 236, 139, 1); color:rgba(102, 94, 56, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-lightbulb"></i> Information
+</h4>
+</div>
+<div class="panel-body">
+La couche cartographique “iris_31”&quot; contient les codes communes dans sa variable INSEE_COM et la population municipale de 2014 dans sa variable P14_POP.
+</div>
+</div>
+</div>
+<p><details> <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary> Utilisez les fonctions classiques du package dplyr <code>select</code>, <code>group_by</code> et <code>summarize</code> qui s’appliquent aussi sur des objets de type sf. </details></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-8">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-8" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+com_31 &lt;-<span class="st"> </span>iris_31 %&gt;%
+<span class="st">  </span><span class="kw">select</span>(INSEE_COM,P14_POP) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(INSEE_COM) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">P14_POP=</span> <span class="kw">sum</span>(P14_POP)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">st_cast</span>(<span class="st">&quot;MULTIPOLYGON&quot;</span>)
+
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(com_31))</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><img src="exercises_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<ol start="6" style="list-style-type: decimal">
+<li>En utilisant les données contenues dans “sir_31”, ajoutez à cette couche le nombre de restaurants par commune.</li>
+</ol>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 236, 139, 0.3); border:2px solid rgba(255, 236, 139, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 236, 139, 1); color:rgba(102, 94, 56, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-lightbulb"></i> Information
+</h4>
+</div>
+<div class="panel-body">
+Le code commune n’est pas présent dans la base “sir_31”. Pour l’obtenir, il faut créer une variable INSEE_COM (5 chiffres) qui contatène les variables DEPET (2 chiffres) et COMET (3 chiffres).
+</div>
+</div>
+</div>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-11">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-11" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sir_31 &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../data/sir_31.rds&quot;</span>)
+
+com_31 &lt;-<span class="st"> </span><span class="kw">left_join</span>(com_31,
+                    sir_31 %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">INSEE_COM=</span><span class="kw">paste0</span>(DEPET,COMET)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(INSEE_COM) %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">summarize</span>(<span class="dt">nb_of_rest=</span> <span class="kw">n</span>()) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">st_set_geometry</span>(<span class="ot">NULL</span>),
+                    <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;INSEE_COM&quot;</span>=<span class="st">&quot;INSEE_COM&quot;</span>)
+) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">nb_of_rest=</span><span class="kw">ifelse</span>(<span class="kw">is.na</span>(nb_of_rest),<span class="dv">0</span>,nb_of_rest))</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<ol start="7" style="list-style-type: decimal">
+<li>Agrégez toutes les informations présentes dans “com_31” au niveau des intercommunalités (EPCI).</li>
+</ol>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 236, 139, 0.3); border:2px solid rgba(255, 236, 139, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 236, 139, 1); color:rgba(102, 94, 56, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-lightbulb"></i> Information
+</h4>
+</div>
+<div class="panel-body">
+Il faut utiliser la table de passage “table_MAUP.rds” pour avoir une correspondance entre le code communal (CODGEO) et le code de l’intercommunalité (EPCI).
+</div>
+</div>
+</div>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-13">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-13" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">table_passage &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../data/table_MAUP.rds&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(CODGEO,EPCI)
+
+epci_31  &lt;-<span class="st"> </span>com_31 %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(table_passage,<span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;INSEE_COM&quot;</span>=<span class="st">&quot;CODGEO&quot;</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(EPCI) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">P14_POP=</span><span class="kw">sum</span>(P14_POP),<span class="dt">nb_of_rest=</span> <span class="kw">sum</span>(nb_of_rest)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">st_cast</span>(<span class="st">&quot;MULTIPOLYGON&quot;</span>)
+
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(epci_31))</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><img src="exercises_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 236, 139, 0.3); border:2px solid rgba(255, 236, 139, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 236, 139, 1); color:rgba(102, 94, 56, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-lightbulb"></i> Information
+</h4>
+</div>
+<div class="panel-body">
+On peut remarquer que le nombre de restaurants est très faible voire nul dans la plupart des communes. On va donc vouloir créer une couche cartographique qui utilise partiellement le zonage communal et partiellement le zonage en EPCI.
+</div>
+</div>
+</div>
+<ol start="8" style="list-style-type: decimal">
+<li>On souhaite cartographier le nombre de restaurants au niveau communal si son EPCI contient plus de 100 restaurants et au niveau intercommunal si l’EPCI contient moins de 100 restaurants.Créez une couche cartographique qui réponde à ce besoin.</li>
+</ol>
+<p><details> <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary> Commencez par créer les couches EPCI_less100 et COM_more100 qui correspondent respectivement aux EPCI qui contiennent moins de 100 restaurants et aux communes qui appartiennent à un EPCI contenant plus de 100 restaurants. Puis, utilisez l’instruction <code>do.call(rbind, list(EPCI_less100,COM_more100))</code> pour les fusionner. </details></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-16">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-16" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">EPCI_less100 &lt;-<span class="st"> </span>epci_31 %&gt;%<span class="st"> </span><span class="kw">filter</span>(nb_of_rest &lt;<span class="st"> </span><span class="dv">100</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">setNames</span>(<span class="kw">c</span>(<span class="st">&quot;territory&quot;</span>,<span class="st">&quot;P14_POP&quot;</span>,<span class="st">&quot;nb_of_rest&quot;</span>,<span class="st">&quot;geometry&quot;</span>))
+
+COM_more100 &lt;-<span class="st"> </span><span class="kw">left_join</span>(com_31,table_passage,<span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;INSEE_COM&quot;</span>=<span class="st">&quot;CODGEO&quot;</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(!EPCI%in%EPCI_less100$territory) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">select</span>(-EPCI) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">setNames</span>(<span class="kw">c</span>(<span class="st">&quot;territory&quot;</span>,<span class="st">&quot;P14_POP&quot;</span>,<span class="st">&quot;nb_of_rest&quot;</span>,<span class="st">&quot;geometry&quot;</span>))
+
+<span class="kw">par</span>(<span class="dt">mar =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">mfrow =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(epci_31))
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(EPCI_less100), <span class="dt">col=</span><span class="st">&quot;lightblue&quot;</span>,<span class="dt">add=</span><span class="ot">TRUE</span>)
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(epci_31))
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(COM_more100), <span class="dt">col=</span><span class="st">&quot;lightblue&quot;</span>,<span class="dt">add=</span><span class="ot">TRUE</span>)
+
+mix_31 &lt;-<span class="st"> </span><span class="kw">do.call</span>(rbind, <span class="kw">list</span>(EPCI_less100,COM_more100))
+
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(mix_31), <span class="dt">col=</span><span class="st">&quot;lightblue&quot;</span>)</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div id="section" class="section level4 tabset">
+<h4></h4>
+<div id="municipalities" class="section level5">
+<h5>Municipalities</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+</div>
+<div id="intercommunalities" class="section level5">
+<h5>Intercommunalities</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+</div>
+<div id="both" class="section level5">
+<h5>Both</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+</div>
+</div>
+<div id="section-1" class="section level4">
+<h4></h4>
+<ol start="9" style="list-style-type: decimal">
+<li>A l’aide du package {cartography}, ajoutez simplement à cette carte un rond proportionnel au nombre de restaurants sur chacun de ces territoires.</li>
+</ol>
+<p><details> <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary> C’est la fonction <code>propSymbolsLayer</code> qui permet de dessiner des ronds proportionnels. </details></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-20">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-20" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cartography)
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(mix_31), <span class="dt">col =</span> <span class="st">&quot;ivory1&quot;</span>, <span class="dt">border =</span> <span class="st">&quot;ivory3&quot;</span>,<span class="dt">lwd =</span><span class="fl">0.5</span>,<span class="dt">bg =</span> <span class="st">&quot;#FBEDDA&quot;</span>)
+<span class="kw">propSymbolsLayer</span>(mix_31, <span class="dt">var =</span> <span class="st">&quot;nb_of_rest&quot;</span>, <span class="dt">inches =</span> <span class="fl">0.2</span>)</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><img src="exercises_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+</div>
+</div>
+<div id="exercice-2-cartographie-statique-et-interactive" class="section level1">
+<h1>Exercice 2 : Cartographie statique et interactive</h1>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 0, 153, 0.3); border:2px solid rgba(255, 0, 153, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 0, 153, 1); color:rgba(102, 0, 61, 1)!important;">
+<h4 class="panel-title">
+Remarque pour Timothée
+</h4>
+</div>
+<div class="panel-body">
+Réaliser une carte avec tous les packages présentés par Timothée dans la partie “Maps with R”. En plus de cartography, leaflet et mapview, j’ai fait un exemple rapide avec ggplot2 ici car c’est un outil qui me semble important. A discuter de si on ajoute un petit exemple également dans ton document ? =&gt; En attente de la partie de Timothée sur leaflet et mapview pour continuer.
+</div>
+</div>
+</div>
+<ol style="list-style-type: decimal">
+<li>Préparation des données :</li>
+</ol>
+<ul>
+<li>Chargez dans R le fond cartographique des contours du territoire métropolitain français “fra.shp”</li>
+<li>En utilisant la couche “mix_31” de l’exercice précédent, créez une variable “nb_rest_10000inhab” qui correspond au nombre de restaurants pour 10 000 habitants sur le territoires</li>
+<li>Créez le vecteur “bks” qui correspond aux breaks des quantiles (n=6) sur la variable “nb_rest_10000inhab” en enlevant les doublons de ce vecteur</li>
+<li>Créez le vecteur “cols” qui correspond à un dégradé de orange (n=4)</li>
+<li>Enfin, ajoutez à la couche “mix_31” la variable “typo” qui indique directement la classe de discrétisation à partir des éléments contenus dans “bks” à appliquer à la variable “nb_rest_10000inhab”</li>
+</ul>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 236, 139, 0.3); border:2px solid rgba(255, 236, 139, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 236, 139, 1); color:rgba(102, 94, 56, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-lightbulb"></i> Information
+</h4>
+</div>
+<div class="panel-body">
+Pour la création de bks et cols, on utilisera les fonctions <code>getBreaks</code> et <code>carto.pal</code> du package {cartography}. Pour la création de la variable typo, vous pouvez utiliser la fonction <code>cut</code> en appliquant les paramètres digit.lab=2 et include.lowest = TRUE.
+</div>
+</div>
+</div>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-24">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-24" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fra &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="st">&quot;../data/fra.shp&quot;</span>, <span class="dt">quiet =</span> <span class="ot">TRUE</span>)
+
+mix_31 &lt;-<span class="st"> </span>mix_31 %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">nb_rest_10000inhab =</span> <span class="dv">10000</span> *<span class="st"> </span>nb_of_rest /<span class="st"> </span>P14_POP) 
+
+bks &lt;-<span class="st"> </span><span class="kw">getBreaks</span>(<span class="dt">v =</span> mix_31$nb_rest_10000inhab, <span class="dt">method =</span> <span class="st">&quot;quantile&quot;</span>, <span class="dt">nclass =</span> <span class="dv">6</span>)[-<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">2</span>)]
+
+cols &lt;-<span class="st"> </span><span class="kw">carto.pal</span>(<span class="st">&quot;orange.pal&quot;</span>, <span class="dv">4</span>)
+
+mix_31 &lt;-<span class="st"> </span>mix_31 %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">typo =</span> <span class="kw">cut</span>(nb_rest_10000inhab,<span class="dt">breaks =</span> bks, <span class="dt">dig.lab =</span> <span class="dv">2</span>, <span class="dt">include.lowest =</span> <span class="ot">TRUE</span>))</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<ol start="2" style="list-style-type: decimal">
+<li>A l’aide du package cartography, réalisez cette carte qui contient en applat de couleur la variable “nb_rest_10000inhab” et en rond proportionnel la variable “nb_of_rest”. Réalisez la même chose avec le package ggplot2.</li>
+</ol>
+<div id="section-2" class="section level4 tabset">
+<h4></h4>
+<div id="cartography" class="section level5">
+<h5>cartography</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+</div>
+<div id="ggplot2" class="section level5">
+<h5>ggplot2</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+</div>
+</div>
+<div id="section-3" class="section level4">
+<h4></h4>
+<p>Avec cartography :</p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-27">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-27" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">par</span>(<span class="dt">mar =</span> <span class="kw">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">1.4</span>, <span class="fl">0.2</span>), <span class="dt">bg =</span> <span class="st">&quot;azure&quot;</span>)
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(mix_31), <span class="dt">border=</span><span class="st">&quot;azure&quot;</span>)
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(fra), <span class="dt">col=</span><span class="st">&quot;ivory&quot;</span>, <span class="dt">border =</span> <span class="st">&quot;ivory3&quot;</span>, <span class="dt">xlim =</span> bb[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>)], 
+     <span class="dt">ylim =</span> bb[<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>)],<span class="dt">add=</span><span class="ot">TRUE</span>)
+
+<span class="kw">choroLayer</span>(mix_31, <span class="dt">var =</span> <span class="st">&quot;nb_rest_10000inhab&quot;</span>, <span class="dt">breaks =</span> bks, <span class="dt">col =</span> cols, <span class="dt">border =</span> <span class="st">&quot;grey80&quot;</span>, <span class="dt">lwd =</span> <span class="fl">0.4</span>, 
+           <span class="dt">legend.pos =</span> <span class="st">&quot;topleft&quot;</span>, <span class="dt">legend.title.txt =</span> <span class="st">&quot;Number of restaurants</span><span class="ch">\n</span><span class="st">for 10000 inhabitants&quot;</span>, 
+           <span class="dt">add =</span> <span class="ot">TRUE</span>)
+<span class="kw">propSymbolsLayer</span>(mix_31, <span class="dt">var=</span><span class="st">&quot;nb_of_rest&quot;</span>, <span class="dt">col=</span>viridis::<span class="kw">viridis</span>(<span class="dv">1</span>,<span class="dt">alpha=</span><span class="fl">0.8</span>),<span class="dt">border=</span><span class="ot">NA</span>, <span class="dt">legend.pos=</span><span class="st">&quot;left&quot;</span>, <span class="dt">legend.title.txt =</span> <span class="st">&quot;Number of restaurants&quot;</span>, <span class="dt">add =</span> <span class="ot">TRUE</span>)
+<span class="kw">layoutLayer</span>(<span class="dt">title =</span> <span class="st">&quot;Restaurants&quot;</span>, <span class="dt">sources =</span> <span class="st">&quot;Insee, 2018&quot;</span>, <span class="dt">author =</span> <span class="st">&quot;Kim &amp; Tim, 2018&quot;</span>, 
+            <span class="dt">theme =</span> <span class="st">&quot;green.pal&quot;</span>, <span class="dt">col =</span> <span class="st">&quot;darkred&quot;</span>, <span class="dt">coltitle =</span> <span class="st">&quot;white&quot;</span>, <span class="dt">postitle =</span> <span class="st">&quot;center&quot;</span>,
+            <span class="dt">frame =</span> <span class="ot">TRUE</span>, <span class="dt">scale =</span> <span class="dv">10</span>)
+<span class="kw">north</span>(<span class="dt">pos =</span> <span class="st">&quot;topright&quot;</span>, <span class="dt">south =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Avec ggplot2 :</p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-28">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-28" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+
+map_ggplot &lt;-<span class="st"> </span><span class="kw">ggplot</span>() +
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> fra, <span class="dt">colour =</span> <span class="st">&quot;ivory3&quot;</span>,
+          <span class="dt">fill =</span> <span class="st">&quot;ivory&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> mix_31, <span class="kw">aes</span>(<span class="dt">fill =</span> typo), <span class="dt">colour =</span> <span class="st">&quot;grey80&quot;</span>) +
+<span class="st">  </span><span class="kw">scale_fill_manual</span>(<span class="dt">name =</span> <span class="st">&quot;Number of restaurants</span><span class="ch">\n</span><span class="st">for 10000 inhabitants&quot;</span>,
+                    <span class="dt">values =</span> cols, <span class="dt">na.value =</span> <span class="st">&quot;#303030&quot;</span>)+
+<span class="st">   </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> mix_31 %&gt;%<span class="st">  </span><span class="kw">st_centroid</span>(),
+           <span class="kw">aes</span>(<span class="dt">size=</span> nb_of_rest), <span class="dt">color =</span> viridis::<span class="kw">viridis</span>(<span class="dv">1</span>,<span class="dt">alpha=</span><span class="fl">0.8</span>), <span class="dt">show.legend =</span> <span class="st">&#39;point&#39;</span>)+
+<span class="st">  </span><span class="kw">scale_size</span>(<span class="dt">name =</span> <span class="st">&quot;Number of restaurants&quot;</span>,
+             <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">500</span>, <span class="dv">2000</span>),
+             <span class="dt">range =</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">18</span>))+
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="dv">2154</span>, <span class="dt">datum =</span> <span class="ot">NA</span>,
+           <span class="dt">xlim =</span> <span class="kw">st_bbox</span>(mix_31)[<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>)],
+           <span class="dt">ylim =</span> <span class="kw">st_bbox</span>(mix_31)[<span class="kw">c</span>(<span class="dv">2</span>,<span class="dv">4</span>)]
+  ) +
+<span class="st">  </span><span class="kw">theme_minimal</span>() +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;azure&quot;</span>,<span class="dt">color=</span><span class="ot">NA</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(
+      <span class="dt">title =</span> <span class="st">&quot;Restaurants&quot;</span>,
+      <span class="dt">caption =</span> <span class="st">&quot;Insee, 2018</span><span class="ch">\n</span><span class="st">Kim &amp; Tim, 2018&quot;</span>
+  )
+
+<span class="kw">plot</span>(map_ggplot)</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<ol start="3" style="list-style-type: decimal">
+<li>Leaflet</li>
+</ol>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 173, 153, 0.3); border:2px solid rgba(255, 173, 153, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 173, 153, 1); color:rgba(102, 69, 61, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-android-alert"></i> Warning
+</h4>
+</div>
+<div class="panel-body">
+Les html widgets semblent bugger avec unilur… Issue postée… html modifié à la main pour le moment…
+</div>
+</div>
+</div>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-30">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-30" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Ajout des coordonnées X et Y dans mix_31</span>
+mix_31 &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(mix_31,
+          mix_31 %&gt;%<span class="st">  </span><span class="kw">st_centroid</span>() %&gt;%<span class="st"> </span>
+<span class="st">            </span><span class="kw">st_transform</span>(<span class="st">&#39;+proj=longlat +ellps=GRS80 +no_defs&#39;</span>) %&gt;%
+<span class="st">            </span><span class="kw">st_coordinates</span>() %&gt;%<span class="st"> </span><span class="kw">as.data.frame</span>()) 
+
+<span class="kw">library</span>(leaflet)
+  carto &lt;-<span class="st"> </span><span class="kw">leaflet</span>(mix_31) %&gt;%
+<span class="st">    </span><span class="kw">addTiles</span>(<span class="st">&#39;http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png&#39;</span>) %&gt;%
+<span class="st">    </span><span class="kw">addCircles</span>(<span class="dt">lng =</span> ~X, <span class="dt">lat =</span> ~Y, <span class="dt">weight =</span> <span class="dv">1</span>,
+               <span class="dt">radius =</span> ~<span class="kw">sqrt</span>(nb_of_rest)*<span class="dv">300</span>,
+               <span class="dt">popup =</span> ~<span class="kw">paste</span>(nb_of_rest),
+               <span class="dt">color =</span> ~<span class="kw">colorQuantile</span>(cols, <span class="dt">domain=</span>mix_31$nb_rest_10000inhab, <span class="dt">probs=</span> <span class="kw">c</span>(<span class="dv">0</span>,<span class="fl">0.45</span>,<span class="fl">0.6</span>,<span class="fl">0.8</span>,<span class="fl">1.0</span>))(nb_rest_10000inhab)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">addLegend</span>(<span class="st">&quot;topleft&quot;</span>, 
+              <span class="dt">colors =</span> cols,
+              <span class="dt">labels =</span> <span class="kw">paste0</span>(<span class="st">&quot;[&quot;</span>, <span class="kw">round</span>(bks,<span class="dv">0</span>)[-<span class="dv">5</span>], <span class="st">&quot;;&quot;</span>, <span class="kw">round</span>(bks,<span class="dv">0</span>)[-<span class="dv">1</span>],<span class="st">&quot;[&quot;</span>),
+              <span class="dt">title =</span> <span class="st">&quot;Number of restaurants&lt;br&gt;for 10 000 inhabitants&quot;</span>,
+              <span class="dt">opacity =</span> <span class="dv">1</span>) 
+  
+  carto</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div id="htmlwidget-ca30e2763f21244f57db" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-ca30e2763f21244f57db">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addCircles","args":[[43.5552403520825,43.7201562505574,43.8061731329207,43.2560872598987,43.3394211353899,43.3249018815809,43.4435157765079,43.7367528908252,42.8688603421516,43.0533726763264,43.4584023404687,43.6978064365661,43.8291519648891,43.6032185114193,43.6980609097848,43.3723840078397,43.569257313846,43.4286851767883,43.2198478588822,43.3685248478192,43.3523833302009,43.070148194154,43.6711475107229,43.1904018791353,43.4801027470197,43.2141526600811,43.0913983107664,43.6838733184737,43.5287353654597,43.5399589558183,43.248785267259,43.2020593705815,43.6110156320615,43.4623574150975,43.6525809757473,43.6670956424153,43.5035238901632,43.4378740686579,43.2597016949264,43.6416585243476,43.2543588976294,43.4073391504722,43.5440582681845,43.1235391172892,43.1870372521991,43.2904362931764,43.2419614828252,43.1911281146263,43.4891580202324,43.6150834705823,43.7268678515266,43.1957596297885,43.2309967201544,43.5136332861953,43.3527652970707,43.6975103568558,43.276620007664,43.1786062374133,43.1813206657299,43.2347657966042,43.2541310471354,43.1139879593503,43.4583471443985,43.6117265913705,43.6487634091034,43.4714636420245,43.3470172114943,43.5448763798587,43.1041377013636,43.1468604429681,43.4822216830008,43.472426807014,43.5913312206405,43.4274749478637,43.5369362022285,43.2775029637807,43.5207747021904,43.2713123232973,43.4505905081788,43.261399850748,43.1086753485352,43.3119639398365,43.3991047341662,43.6843242562712,43.5977577957626,43.679780033069,43.5316627089444,43.4984601891612,43.1309948062875,43.3990194978345,43.5217777012435,43.7070849902287,43.259257243882,43.379163911704,43.4814517630555,43.7201204228118,43.3813705621414,43.4230485920991,43.1080225823965,43.081233935958,43.4586907607362,43.4832070105457,43.3331073895824,43.4570639068869,43.5388815116902,43.5006618747946,43.186789527747,43.4844058187393,43.1295286020398,43.1713081890224,43.1956821229983,43.1723931440798,43.6693681225486,43.5582061672863,43.3912025123083,43.1549876540359,43.7163280313799,43.0661796001962,43.2299314705611,43.1494541655103,43.2850886185719,43.1660065418315,43.1401042122733,43.3944997726043,43.3845946572449,43.5066551541397,43.4058654491653,43.0915529539438,43.4004732018025,43.2904861652431,43.6631760918634,43.6312078589928,43.6110125628978,43.3041479128261,43.4557293887898,43.3385781501333,43.2546390126747,43.4550496684371,43.4847155192365,43.2269848569216,43.2314009199047,43.6422772075045,43.0880896105336,43.4489083598711,43.3530619582844,43.2305375734983,43.4151436339168,43.5219830857118,43.5010400596841,43.5250987650212,43.322854350094,43.2886059230189,43.208037471323,43.6277406378835,43.6224307183392,43.5029117757976,43.4822040738961,43.0835483286437,43.4943244933305,43.1119811879139,43.5290245018524,43.4338664432064,43.3702294626177,43.5812612970482,43.544047478907,43.4898728925411,43.0532087808653,43.076006790945,43.3508653577516,43.5072147468428,43.4943855638816,43.4688205222464,43.5235478505279,43.6928194739078,43.2741402693475,43.475835042458,43.195960304785,43.3384297064863,43.330881198098,43.1196937279108,43.421133380873,43.1565264969963,43.6629939248971,43.7391977394039,43.2219292727228,43.3258428295527,43.2418774491765,43.5101755134012,43.1971658604075,43.5592759008573,43.2676522023147,43.1683269012061,43.5148374965171,43.3066471801282,43.2392585713524,43.2666724523448,43.215088273584,43.2116579800329,43.4793255228449,43.1480833568851,43.1222237890185,43.1476369654766,43.689927611431,43.4986132621196,43.2391524352415,43.5960639018451,43.1118194116038,43.5783251306371,43.6541714507433,43.0885417202761,43.4763526033847,43.5279282377286,43.5075525292155,43.4682303756173,43.1222940197588,43.1340912607705,43.5261740305714,43.3478290321169],[1.19711689958787,1.67465321249141,1.40733914517086,1.23466982003177,1.45235709059117,1.08024227646508,1.69663839042615,1.16063196071087,0.630027295810722,0.876523616750338,1.9126890540875,1.59802248355832,1.54253961558269,1.22284117343948,1.50100149369161,0.885984727297181,1.58518657399128,1.59428754050264,0.927103946615059,0.936714918543258,0.811099530032211,0.720338296129187,1.4234802217528,0.812980521700584,1.45719757519083,0.870853000784643,0.58978440773231,1.32860593514316,1.48717428463468,1.56826612829607,0.940920125490109,0.563176975170438,1.50468935639109,1.62800264089402,1.55904333976648,1.37408416595192,1.57049140014047,1.55635109704377,0.917799838981589,1.37983318361289,0.647618615007458,0.826283852378279,1.13785075148926,0.635392089321417,0.517051843287805,0.6504633830013,0.874981056811905,0.883281317964328,1.07037082302962,1.23296502851698,1.40917840769347,0.676129523975891,0.799348401149536,1.5033271701727,0.902366762972351,1.43517976287944,0.781803633213512,0.541562803782042,0.862017943878316,0.692166779691498,0.741843449921534,0.616602001223047,1.44283623474114,1.32702562525642,1.32243416782817,1.49026679088106,0.878951038963553,1.34310601580727,0.516361948015474,0.611618209277199,1.53251269969501,1.55046545116631,1.60269334861063,1.35875623481126,1.07932091974813,0.882144155886392,1.55269257063421,0.757410160284465,1.48779925843416,0.811276437605901,0.781061742208092,0.892732735146829,1.29401091355674,1.39063082631062,1.5535322043188,1.43626757713276,1.23906859832545,1.62143889587349,0.534620520464826,0.91336350216589,1.31293134621656,1.36392279427203,0.603454676883738,0.957051570699584,1.4267181574414,1.43453580147968,0.833783202324974,1.50271616567364,0.832513175689507,0.671574867765764,1.40074408312873,1.66358623663332,0.935531452363352,1.23723873420018,1.52151338307337,1.42398508583618,0.700496840019569,1.24818070211694,0.777131512574069,0.722435470228168,0.61378097705364,0.781942133975189,1.45485855327415,1.56659367547433,1.24640643393185,0.492424489096728,1.38248270500751,0.761968940150201,0.666462240747272,0.7740212402499,0.809226946868501,0.657563909965661,0.576577888581483,0.885224796148388,0.920781534321932,1.47355656327742,0.863852349224461,0.75567868382479,0.778993037348182,0.707535377810891,1.28077130738176,1.5627487286761,1.57350648597844,0.767369557122417,1.52020530734358,0.767153757961862,0.716781183144642,1.5703475385135,1.58021444026189,0.636231011284035,0.906602470160665,1.52886635367423,0.557878007099457,1.30870352319544,0.709506309077281,0.597414951965233,1.52583387832118,1.59327241106765,1.51018354326964,1.45672188278277,0.701423886792738,0.91166217694569,0.831790599823555,1.26120811486063,1.53553506270647,1.39405423364641,1.3911764465571,0.79735885511786,1.52202091785559,0.596312728452447,1.40186089786613,1.53435820236533,0.753110859216723,1.5430798302923,1.47748397380296,1.47754210501506,0.718457358791768,0.752601296469353,0.918512861962766,1.35434706933354,1.37452774338551,1.056663799566,1.14164162611642,1.41238930567235,0.84744893106134,1.20850910060105,0.849401594228608,0.73637172323638,0.850651765843,0.726670468589839,1.26844518659176,0.691087739079575,1.50117661633373,1.35681912111841,0.739761078430344,0.800083448239716,0.574899586133377,1.19877356804683,0.745435727249419,1.53506687501796,0.69401349978002,0.570747231806334,1.08839562412105,0.824547797047692,0.722088779451856,0.949658426542352,0.595361228768989,0.662237195922434,1.35927247167793,0.704336517488353,0.803409570849515,0.542151276743093,1.35667224796704,1.28740365109007,0.971745009326253,1.43208666013034,0.549966744199819,1.33504722600489,1.48337820167348,0.701589913792889,1.69217491045458,1.43805611925248,1.44824622256336,1.38183233222054,0.669935906579891,0.485130833698604,1.34665740687016,0.952441655450329],[793.725393319377,0,2323.79000772445,2563.20112359526,2343.074902772,2782.08554864871,2782.08554864871,2580.69758011279,2814.24945589406,1989.97487421324,2323.79000772445,1824.82875908947,1824.82875908947,2615.3393661244,1749.28556845359,0,0,734.846922834953,0,0,0,0,1469.69384566991,300,300,519.615242270663,0,994.98743710662,948.683298050514,424.264068711929,300,0,2204.54076850486,793.725393319377,300,1438.74945699382,424.264068711929,0,0,3286.335345031,300,0,424.264068711929,300,300,948.683298050514,0,0,0,600,1374.77270848675,300,300,1670.32930884901,0,1307.6696830622,0,0,0,0,0,670.820393249937,300,3231.0988842807,1697.05627484771,0,0,2204.54076850486,0,300,424.264068711929,670.820393249937,948.683298050514,1236.9316876853,0,0,1081.6653826392,300,0,0,734.846922834953,0,424.264068711929,1849.32420089069,0,519.615242270663,1558.84572681199,300,0,0,1307.6696830622,424.264068711929,0,0,0,793.725393319377,900,0,424.264068711929,424.264068711929,1081.6653826392,300,0,424.264068711929,2509.98007960223,600,0,300,0,0,424.264068711929,300,1122.49721603218,300,600,0,600,0,0,0,0,0,0,0,0,0,0,300,519.615242270663,0,1081.6653826392,300,424.264068711929,0,0,0,0,670.820393249937,300,0,0,994.98743710662,1236.9316876853,3029.85148150862,0,0,0,0,424.264068711929,0,424.264068711929,0,0,948.683298050514,0,1236.9316876853,900,0,300,424.264068711929,2343.074902772,0,300,1081.6653826392,1615.54944214035,0,0,0,300,1643.1676725155,670.820393249937,0,424.264068711929,1697.05627484771,0,300,0,0,0,2284.73193175917,424.264068711929,0,1272.79220613579,994.98743710662,0,0,0,1161.89500386223,300,1800,424.264068711929,0,0,0,0,0,0,0,600,0,0,0,948.683298050514,1236.9316876853,0,14724.4694301696,300,2473.8633753706,1989.97487421324,424.264068711929,0,300,0,424.264068711929,519.615242270663,0,1122.49721603218,0],null,null,{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":["#FCB14B","#FCE47E","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FA0000","#FE720B","#FA0000","#FCB14B","#FE720B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FA0000","#FCE47E","#FA0000","#FE720B","#FCB14B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FA0000","#FE720B","#FE720B","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FE720B","#FE720B","#FA0000","#FA0000","#FA0000","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FE720B","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FE720B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCE47E","#FA0000","#FE720B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FA0000","#FE720B","#FE720B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FCE47E"],"weight":1,"opacity":0.5,"fill":true,"fillColor":["#FCB14B","#FCE47E","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FA0000","#FE720B","#FA0000","#FCB14B","#FE720B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FA0000","#FCE47E","#FA0000","#FE720B","#FCB14B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FA0000","#FE720B","#FE720B","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FE720B","#FE720B","#FA0000","#FA0000","#FA0000","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FE720B","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FE720B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCE47E","#FA0000","#FE720B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FA0000","#FE720B","#FE720B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FCE47E"],"fillOpacity":0.2,"dashArray":null},["7","0","60","73","61","86","86","74","88","44","60","37","37","76","34","0","0","6","0","0","0","0","24","1","1","3","0","11","10","2","1","0","54","7","1","23","2","0","0","120","1","0","2","1","1","10","0","0","0","4","21","1","1","31","0","19","0","0","0","0","0","5","1","116","32","0","0","54","0","1","2","5","10","17","0","0","13","1","0","0","6","0","2","38","0","3","27","1","0","0","19","2","0","0","0","7","9","0","2","2","13","1","0","2","70","4","0","1","0","0","2","1","14","1","4","0","4","0","0","0","0","0","0","0","0","0","0","1","3","0","13","1","2","0","0","0","0","5","1","0","0","11","17","102","0","0","0","0","2","0","2","0","0","10","0","17","9","0","1","2","61","0","1","13","29","0","0","0","1","30","5","0","2","32","0","1","0","0","0","58","2","0","18","11","0","0","0","15","1","36","2","0","0","0","0","0","0","0","4","0","0","0","10","17","0","2409","1","68","44","2","0","1","0","2","3","0","14","0"],null,null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FCE47E","#FCB14B","#FE720B","#FA0000"],"labels":["[0;12[","[12;21[","[21;32[","[32;217["],"na_color":null,"na_label":"NA","opacity":1,"position":"topleft","type":"unknown","title":"Number of restaurants<br>for 10 000 inhabitants","extra":null,"layerId":null,"className":"info legend"}]}],"limits":{"lat":[42.8688603421516,43.8291519648891],"lng":[0.485130833698604,1.9126890540875]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="exercice-3-cartogramme" class="section level1">
+<h1>Exercice 3 : Cartogramme</h1>
+<p>Réaliser un cartogramme du département 31 au niveau intercommunal proportionnellement aux nombres de restaurants (données SIRENE).</p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-32">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-32" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(cartogram)
+cartogramme &lt;-<span class="st"> </span><span class="kw">cartogram_cont</span>(epci_31, <span class="st">&quot;nb_of_rest&quot;</span>, <span class="dt">itermax =</span> <span class="dv">5</span>, <span class="dt">maxSizeError =</span> <span class="dv">1</span>)
+<span class="kw">plot</span>(<span class="kw">st_geometry</span>(cartogramme), <span class="dt">col=</span><span class="st">&quot;lightblue&quot;</span>)</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<div id="section-4" class="section level4 tabset">
+<h4></h4>
+<div id="normal-boundaries" class="section level5">
+<h5>Normal boundaries</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
+</div>
+<div id="cartogram" class="section level5">
+<h5>Cartogram</h5>
+<p><img src="exercises_files/figure-html/unnamed-chunk-34-1.png" width="672" /></p>
+</div>
+</div>
+<div id="section-5" class="section level4">
+<h4></h4>
+</div>
+</div>
+<div id="exercice-4-linemap" class="section level1">
+<h1>Exercice 4 : Linemap</h1>
+<p>Réaliser une linemap des communes du département 31 proportionnellement au nombre de restaurants présents dans chaque commune (données SIRENE).</p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 236, 139, 0.3); border:2px solid rgba(255, 236, 139, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 236, 139, 1); color:rgba(102, 94, 56, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-lightbulb"></i> Information
+</h4>
+</div>
+<div class="panel-body">
+Utilisez la couche cartographique “com_31” des exercices précédents et le package {linemap}.
+</div>
+</div>
+</div>
+<p><details> <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary> Pensez à utiliser les deux fonctions <code>getgrid</code> et <code>linemap</code> de ce package. Les paramètres suivants fonctionnent : cellsize = 1750, k = 400 et threshold = 0.01 </details></p>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-36">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-36" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(linemap)
+grid &lt;-<span class="st"> </span><span class="kw">getgrid</span>(<span class="dt">x =</span> com_31, <span class="dt">cellsize =</span> <span class="dv">1750</span>, <span class="dt">var =</span> <span class="st">&quot;nb_of_rest&quot;</span>)
+<span class="kw">plot</span>(sf::<span class="kw">st_geometry</span>(com_31), <span class="dt">col=</span><span class="st">&quot;ivory1&quot;</span>, <span class="dt">border =</span> <span class="ot">NA</span>)
+opar &lt;-<span class="st"> </span><span class="kw">par</span>(<span class="dt">mar=</span><span class="kw">c</span>(<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>,<span class="dv">0</span>), <span class="dt">bg =</span> <span class="st">&quot;ivory2&quot;</span>)
+<span class="kw">linemap</span>(<span class="dt">x =</span> grid, <span class="dt">var =</span> <span class="st">&quot;nb_of_rest&quot;</span>, <span class="dt">k =</span> <span class="dv">400</span>, <span class="dt">threshold =</span> <span class="fl">0.01</span>,
+        <span class="dt">col =</span> <span class="st">&quot;ivory1&quot;</span>, <span class="dt">border =</span> <span class="st">&quot;ivory4&quot;</span>, <span class="dt">lwd =</span> <span class="fl">0.6</span>, <span class="dt">add =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p><img src="exercises_files/figure-html/unnamed-chunk-37-1.png" width="672" /></p>
+</div>
+<div id="exercice-5-carte-tricolore" class="section level1">
+<h1>Exercice 5 : Carte tricolore</h1>
+<div id="section-6" class="section level5 bonus">
+<h5></h5>
+<p>Réaliser une carte tricolore qui représente les iris de Toulouse en fonction de si elles sont plutôt dotées en restaurants, cafés ou fast foods (données OSM)</p>
+</div>
+<div id="section-7" class="section level5">
+<h5></h5>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(255, 173, 153, 0.3); border:2px solid rgba(255, 173, 153, 1);">
+<div class="panel-heading" style="background-color:rgba(255, 173, 153, 1); color:rgba(102, 69, 61, 1)!important;">
+<h4 class="panel-title">
+<i class="icon ion-android-alert"></i> Warning
+</h4>
+</div>
+<div class="panel-body">
+Pour le moment, la fonction Tricolore est buggée suite à la mise à jour de ggplot2… Une issue a été postée, à voir si ce problème sera fixé avant Florence. A titre d’exemple, j’ai compilé le code de la fonction avec une ancienne version de ggplot2 et j’ai enregistré le résultat de la fonction Tricolore dans tric.rds
+</div>
+</div>
+</div>
+<div class="panel-group">
+<div class="panel" style="background-color:rgba(172, 225, 175, 0.3); border:2px solid rgba(172, 225, 175, 1);">
+<div class="panel-heading" style="background-color:rgba(172, 225, 175, 1); color:rgba(69, 90, 70, 1)!important;">
+<h4 class="panel-title">
+<a class = "collapsed" style="color: rgba(69, 90, 70, 1);" data-toggle="collapse" href="#unnamed-chunk-39">Solution</a>
+</h4>
+</div>
+<div id="unnamed-chunk-39" class="panel-collapse collapse">
+<div class="panel-body">
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bdd &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../data/osm_31.rds&quot;</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(INSEE_COM==<span class="st">&quot;31555&quot;</span>)
+
+bdd_restaurant &lt;-<span class="st"> </span>bdd %&gt;%<span class="st"> </span><span class="kw">filter</span>(amenity==<span class="st">&quot;restaurant&quot;</span>) %&gt;%<span class="st">  </span>
+<span class="st">  </span><span class="kw">group_by</span>(CODE_IRIS) %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">summarize</span>(<span class="dt">restaurant=</span> <span class="kw">n</span>()) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">st_set_geometry</span>(<span class="ot">NULL</span>)
+
+bdd_fast_food &lt;-<span class="st"> </span>bdd %&gt;%<span class="st"> </span><span class="kw">filter</span>(amenity==<span class="st">&quot;fast_food&quot;</span>) %&gt;%<span class="st">  </span>
+<span class="st">  </span><span class="kw">group_by</span>(CODE_IRIS) %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">summarize</span>(<span class="dt">fast_food=</span> <span class="kw">n</span>()) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">st_set_geometry</span>(<span class="ot">NULL</span>)
+
+bdd_cafe &lt;-<span class="st"> </span>bdd %&gt;%<span class="st"> </span><span class="kw">filter</span>(amenity==<span class="st">&quot;cafe&quot;</span>) %&gt;%<span class="st">  </span>
+<span class="st">  </span><span class="kw">group_by</span>(CODE_IRIS) %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">summarize</span>(<span class="dt">cafe=</span> <span class="kw">n</span>()) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">st_set_geometry</span>(<span class="ot">NULL</span>)
+
+couche_carto &lt;-<span class="st"> </span><span class="kw">left_join</span>(iris_31 %&gt;%<span class="st">  </span><span class="kw">filter</span>(INSEE_COM==<span class="st">&quot;31555&quot;</span>), 
+                          bdd_restaurant,
+                          <span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;CODE_IRIS&quot;</span>=<span class="st">&quot;CODE_IRIS&quot;</span>)
+) %&gt;%<span class="st"> </span>
+<span class="kw">left_join</span>(bdd_fast_food,<span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;CODE_IRIS&quot;</span>=<span class="st">&quot;CODE_IRIS&quot;</span>)) %&gt;%<span class="st"> </span>
+<span class="kw">left_join</span>(bdd_cafe,<span class="dt">by=</span><span class="kw">c</span>(<span class="st">&quot;CODE_IRIS&quot;</span>=<span class="st">&quot;CODE_IRIS&quot;</span>)) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">replace</span>(<span class="kw">is.na</span>(.),<span class="dv">0</span>) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">part_restaurant =</span> restaurant /<span class="st"> </span>(restaurant +<span class="st"> </span>fast_food +<span class="st"> </span>cafe), 
+         <span class="dt">part_fast_food =</span> fast_food /<span class="st"> </span>(restaurant +<span class="st"> </span>fast_food +<span class="st"> </span>cafe), 
+         <span class="dt">part_cafe =</span> cafe /<span class="st"> </span>(restaurant +<span class="st"> </span>fast_food +<span class="st"> </span>cafe)
+         )
+
+<span class="co">#devtools::install_github(&quot;jschoeley/tricolore&quot;)</span>
+<span class="kw">library</span>(tricolore)
+
+<span class="co"># tric &lt;- Tricolore(couche_carto %&gt;% st_set_geometry(NULL), &#39;part_restaurant&#39;, &#39;part_fast_food&#39;, &#39;part_cafe&#39;, center = NA)</span>
+<span class="co">#saveRDS(object = tric, file = &quot;../data/tric.rds&quot;)</span>
+tric &lt;-<span class="st"> </span><span class="kw">readRDS</span>(<span class="st">&quot;../data/tric.rds&quot;</span>) 
+<span class="co">#tric$legend</span>
+
+
+couche_carto &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(couche_carto,tric$hexsrgb %&gt;%<span class="st"> </span><span class="kw">as_data_frame</span>() %&gt;%<span class="st"> </span><span class="kw">replace</span>(<span class="kw">is.na</span>(.),<span class="st">&quot;#FFFFFFFF&quot;</span>))
+
+<span class="kw">library</span>(ggplot2)
+q &lt;-<span class="st"> </span><span class="kw">ggplot</span>(couche_carto) +
+<span class="st">    </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> value)) +
+<span class="st">  </span><span class="kw">scale_fill_identity</span>() 
+
+q</code></pre></div>
+<img src="exercises_files/figure-html/unnamed-chunk-39-1.png" width="672" />
+</div>
+</div>
+</div>
+</div>
+<center>
+<img src="./img/tricolore.png" alt="legende tricolore" style="border:0px" height="50%" width="50%"/>
+</center>
+<hr />
+<hr />
+<p><strong>reproducibility</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sessionInfo</span>()</code></pre></div>
+<pre><code>R version 3.3.2 (2016-10-31)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 7 x64 (build 7601) Service Pack 1
+
+locale:
+[1] LC_COLLATE=French_France.1252  LC_CTYPE=French_France.1252   
+[3] LC_MONETARY=French_France.1252 LC_NUMERIC=C                  
+[5] LC_TIME=French_France.1252    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] tricolore_1.0.3   linemap_0.1.0     cartogram_0.1.0   leaflet_1.1.0    
+ [5] cartography_2.1.1 bindrcpp_0.2      sf_0.6-3          knitr_1.20       
+ [9] stringr_1.3.1     dplyr_0.7.4       purrr_0.2.4       readr_1.1.1      
+[13] tidyr_0.7.2       tibble_1.4.2      ggplot2_3.0.0     tidyverse_1.1.1  
+
+loaded via a namespace (and not attached):
+ [1] viridis_0.4.0       httr_1.3.1          jsonlite_1.5        viridisLite_0.3.0  
+ [5] modelr_0.1.1        shiny_1.0.5         assertthat_0.2.0    sp_1.2-5           
+ [9] tensorA_0.36.1      cellranger_1.1.0    yaml_2.1.18         robustbase_0.92-8  
+[13] pillar_1.1.0        backports_1.1.1     lattice_0.20-34     glue_1.2.0         
+[17] digest_0.6.15       rvest_0.3.2         colorspace_1.3-2    htmltools_0.3.6    
+[21] httpuv_1.3.5        plyr_1.8.4          psych_1.7.5         pkgconfig_2.0.1    
+[25] ggtern_2.2.1        broom_0.4.2         haven_1.1.1         xtable_1.8-2       
+[29] scales_0.5.0.9000   withr_2.1.2         lazyeval_0.2.1      mnormt_1.5-5       
+[33] proto_1.0.0         magrittr_1.5        readxl_1.1.0.9000   mime_0.5           
+[37] evaluate_0.10.1     nlme_3.1-128        MASS_7.3-45         forcats_0.2.0      
+[41] xml2_1.1.1          foreign_0.8-67      compositions_1.40-1 class_7.3-14       
+[45] tools_3.3.2         hms_0.4.0           energy_1.7-2        munsell_0.4.3      
+[49] e1071_1.6-8         rlang_0.2.1         classInt_0.1-24     units_0.6-0        
+[53] grid_3.3.2          unilur_0.3.0.9000   htmlwidgets_1.2     crosstalk_1.0.0    
+[57] rmarkdown_1.8       boot_1.3-18         gtable_0.2.0        DBI_1.0.0          
+[61] reshape2_1.4.3      R6_2.2.2            bayesm_3.1-0.1      gridExtra_2.3      
+[65] lubridate_1.7.1     rgeos_0.3-24        bindr_0.1           rprojroot_1.2      
+[69] latex2exp_0.4.0     stringi_1.1.7       parallel_3.3.2      Rcpp_0.12.16       
+[73] DEoptimR_1.0-8     </code></pre>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
