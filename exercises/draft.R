@@ -19,26 +19,227 @@
 
 
 
-bdd <- readRDS("data/osm_31.rds") %>% 
-  filter(INSEE_COM=="31555")
 
-          
-bdd <- bind_cols(summarize(bdd %>% group_by(CODE_IRIS)),
-  summarize(bdd %>% group_by(CODE_IRIS) %>%  filter(amenity=="restaurant") %>%  st_set_geometry(NULL),restaurant= n()) %>% select(restaurant),
-  summarize(bdd %>% group_by(CODE_IRIS) %>%  filter(amenity=="fast_food") %>%  st_set_geometry(NULL),fast_food= n()) %>% select(fast_food),
-  summarize(bdd %>% group_by(CODE_IRIS) %>%  filter(amenity=="cafe") %>%  st_set_geometry(NULL),cafe= n()) %>% select(cafe)
- )
+
+        
+# # Exercice 5 : Carte tricolore
+# 
+# #####  {.bonus}
+# 
+# Réaliser une carte tricolore qui représente les iris de Toulouse en fonction de si elles sont plutôt dotées en restaurants, cafés ou fast foods (données OSM)
+# 
+# ##### {}
+# 
+# 
+# ```{block, box.type = "warning"}
+# Pour le moment, la fonction Tricolore est buggée suite à la mise à jour de ggplot2...
+# Une issue a été postée, à voir si ce problème sera fixé avant Florence. 
+# A titre d'exemple, j'ai compilé le code de la fonction avec une ancienne version de ggplot2 et j'ai enregistré le résultat de la fonction Tricolore dans tric.rds
+# ```
+# 
+# 
+# ```{r, nm=TRUE, solution = TRUE}
+# bdd <- readRDS("../data/osm_31.rds") %>% 
+# filter(INSEE_COM=="31555")
+# 
+# bdd_restaurant <- bdd %>% filter(amenity=="restaurant") %>%  
+# group_by(CODE_IRIS) %>% 
+# summarize(restaurant= n()) %>% 
+# st_set_geometry(NULL)
+# 
+# bdd_fast_food <- bdd %>% filter(amenity=="fast_food") %>%  
+# group_by(CODE_IRIS) %>% 
+# summarize(fast_food= n()) %>% 
+# st_set_geometry(NULL)
+# 
+# bdd_cafe <- bdd %>% filter(amenity=="cafe") %>%  
+# group_by(CODE_IRIS) %>% 
+# summarize(cafe= n()) %>% 
+# st_set_geometry(NULL)
+# 
+# couche_carto <- left_join(iris_31 %>%  filter(INSEE_COM=="31555"), 
+# bdd_restaurant,
+# by=c("CODE_IRIS"="CODE_IRIS")
+# ) %>% 
+# left_join(bdd_fast_food,by=c("CODE_IRIS"="CODE_IRIS")) %>% 
+# left_join(bdd_cafe,by=c("CODE_IRIS"="CODE_IRIS")) %>% 
+# replace(is.na(.),0) %>% 
+# mutate(part_restaurant = restaurant / (restaurant + fast_food + cafe), 
+# part_fast_food = fast_food / (restaurant + fast_food + cafe), 
+# part_cafe = cafe / (restaurant + fast_food + cafe)
+# )
+# 
+# #devtools::install_github("jschoeley/tricolore")
+# library(tricolore)
+# 
+# # tric <- Tricolore(couche_carto %>% st_set_geometry(NULL), 'part_restaurant', 'part_fast_food', 'part_cafe', center = NA)
+# #saveRDS(object = tric, file = "../data/tric.rds")
+# tric <- readRDS("../data/tric.rds") 
+# #tric$legend
+# 
+# 
+# couche_carto <- bind_cols(couche_carto,tric$hexsrgb %>% as_data_frame() %>% replace(is.na(.),"#FFFFFFFF"))
+# 
+# library(ggplot2)
+# q <- ggplot(couche_carto) +
+# geom_sf(aes(fill = value)) +
+# scale_fill_identity() 
+# 
+# q
+# ```
+# 
+# <center><img src="./img/tricolore.png" alt="legende tricolore" style="border:0px" height="50%" width="50%"/></center>
+# 
+# bdd <- bind_cols(summarize(bdd %>% group_by(CODE_IRIS)),
+#   summarize(bdd %>% group_by(CODE_IRIS) %>%  filter(amenity=="restaurant") %>%  st_set_geometry(NULL),restaurant= n()) %>% select(restaurant),
+#   summarize(bdd %>% group_by(CODE_IRIS) %>%  filter(amenity=="fast_food") %>%  st_set_geometry(NULL),fast_food= n()) %>% select(fast_food),
+#   summarize(bdd %>% group_by(CODE_IRIS) %>%  filter(amenity=="cafe") %>%  st_set_geometry(NULL),cafe= n()) %>% select(cafe)
+#  )
+#   
+
+# 3. Leaflet
+# 
+# 
+# ```{block, box.type = "warning"}
+# Les html widgets semblent bugger avec unilur... Issue postée... html modifié à la main pour le moment...
+# ```
+# 
+# 
+# ```{r, eval=FALSE, solution=TRUE}
+# # Ajout des coordonnées X et Y dans mix_31
+# mix_31 <- bind_cols(mix_31,
+#                     mix_31 %>%  st_centroid() %>% 
+#                       st_transform('+proj=longlat +ellps=GRS80 +no_defs') %>%
+#                       st_coordinates() %>% as.data.frame()) 
+# 
+# library(leaflet)
+# carto <- leaflet(mix_31) %>%
+#   addTiles('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
+#   addCircles(lng = ~X, lat = ~Y, weight = 1,
+#              radius = ~sqrt(nb_of_rest)*300,
+#              popup = ~paste(nb_of_rest),
+#              color = ~colorQuantile(cols, domain=mix_31$nb_rest_10000inhab, probs= c(0,0.45,0.6,0.8,1.0))(nb_rest_10000inhab)) %>% 
+#   addLegend("topleft", 
+#             colors = cols,
+#             labels = paste0("[", round(bks,0)[-5], ";", round(bks,0)[-1],"["),
+#             title = "Number of restaurants<br>for 10 000 inhabitants",
+#             opacity = 1) 
+# 
+# carto
+# 
+# ```
+# 
+# ```{r, echo=FALSE}
+# # Ajout des coordonnées X et Y dans mix_31
+# mix_31 <- bind_cols(mix_31,
+#                     mix_31 %>%  st_centroid() %>% 
+#                       st_transform('+proj=longlat +ellps=GRS80 +no_defs') %>%
+#                       st_coordinates() %>% as.data.frame()) 
+# 
+# library(leaflet)
+# carto <- leaflet(mix_31) %>%
+#   addTiles('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
+#   addCircles(lng = ~X, lat = ~Y, weight = 1,
+#              radius = ~sqrt(nb_of_rest)*300,
+#              popup = ~paste(nb_of_rest),
+#              color = ~colorQuantile(cols, domain=mix_31$nb_rest_10000inhab, probs= c(0,0.45,0.6,0.8,1.0))(nb_rest_10000inhab)) %>% 
+#   addLegend("topleft", 
+#             colors = cols,
+#             labels = paste0("[", round(bks,0)[-5], ";", round(bks,0)[-1],"["),
+#             title = "Number of restaurants<br>for 10 000 inhabitants",
+#             opacity = 1) 
+# 
+# carto
+# ```
+#### useless
+library(cartography)
+library(sf)
+sir_31 <- readRDS("data/sir_31.rds")
+iris_31 <- readRDS("data/iris_31.rds")
+
+###### begins
+
+library(mapview)
+
+mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
+
+
+fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12) {
+  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
+  x <- st_intersects(grid, feat) 
+  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
+  gg <- st_intersection(gg,adm) #NEW
+  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
+  bks <- c(0,unique(round(getBreaks(gg$n[gg$n>0], nclass = nclass, method = method),0)))
+  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
+  choroLayer(gg, var = "n", border = NA, add = TRUE, method = method, breaks= bks, col= cols, legend.pos="topright", legend.values.cex=0.7, legend.title.cex=0.7, legend.title.txt = "resto per ha", legend.nodata=FALSE,legend.values.rnd=0)
+  layoutLayer(title = "Count points in a regular grid", scale = 0.5, tabtitle = TRUE, frame = FALSE)
+}
+
+library(spatstat)
+library(raster)
+library(maptools)
+fufun <- function(feat, adm, sigma = 100, res = 50, method="equal",nclass=12) {
+  bb <- as(feat, "Spatial")
+  bbowin <- as.owin(as(adm, "Spatial"))
+  pts <- coordinates(bb)
+  p <- ppp(pts[, 1], pts[, 2], window = bbowin)
+  ds <- density.ppp(p, sigma = sigma, eps = res)
+  rasdens <- raster(ds) * 10000 * 10000
+  rasdens <- st_intersection(rasdens,adm) #NEW
+  proj4string(rasdens) <- "+init=epsg:2154"
+  bks <- unique(round(getBreaks(values(rasdens), nclass = nclass, method = method),0)) 
+  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
+  plot(adm$geometry, col = NA, border = NA, main = "", bg = "#FBEDDA")
+  plot(rasdens, breaks = bks, col = cols, add = T, legend = F)
+  legendChoro(pos = "topright", cex = 0.7, title.cex = 0.7, title.txt = "resto per ha", 
+              breaks = bks, nodata = FALSE, values.rnd = 0, col = cols)
+  layoutLayer(title = "Smooth density Analysis", scale = 0.5, tabtitle = TRUE, frame = FALSE)
+ }
+
+par(mar = c(0, 0, 1.2, 0), mfrow = c(1, 1))
+fufun2(sir_31, iris_31, 2000)
+fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
+fufun(sir_31, iris_31,  2000, 2000)
+fufun(sir_31, iris_31,  2000, 2000,method="quantile",nclass=12)
+fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
+
+
+# # installing/loading the package:
+# if(!require(installr)) { install.packages("installr"); require(installr)}
+# install.pandoc()
+
+# dataprepartion +
+#   sm$pcad <- 100 * sm$cad / sm$act
+
+
+
+library(ggplot2)
+
+
+summary(sm$cad)
+
+quantile(sm$cad,probs = seq(0, 1, 0.20))
+
+bks <- getBreaks(v = sm$pcad, method = "quantile", nclass = 6)
+
+?quantile
+library(cartography)
   
 
-# Kim : exercises 2, 4 and unilur. add fra.shp and remove example_practical
-# 
-# Remplacer
-# 
-# <p>preserve6fed80fecbcae655</p>
-#   
-#   Par 
-# 
-# <div id="htmlwidget-ca30e2763f21244f57db" style="width:672px;height:480px;" class="leaflet html-widget"></div>
-#   <script type="application/json" data-for="htmlwidget-ca30e2763f21244f57db">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"maxNativeZoom":null,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"continuousWorld":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":null,"unloadInvisibleTiles":null,"updateWhenIdle":null,"detectRetina":false,"reuseTiles":false}]},{"method":"addCircles","args":[[43.5552403520825,43.7201562505574,43.8061731329207,43.2560872598987,43.3394211353899,43.3249018815809,43.4435157765079,43.7367528908252,42.8688603421516,43.0533726763264,43.4584023404687,43.6978064365661,43.8291519648891,43.6032185114193,43.6980609097848,43.3723840078397,43.569257313846,43.4286851767883,43.2198478588822,43.3685248478192,43.3523833302009,43.070148194154,43.6711475107229,43.1904018791353,43.4801027470197,43.2141526600811,43.0913983107664,43.6838733184737,43.5287353654597,43.5399589558183,43.248785267259,43.2020593705815,43.6110156320615,43.4623574150975,43.6525809757473,43.6670956424153,43.5035238901632,43.4378740686579,43.2597016949264,43.6416585243476,43.2543588976294,43.4073391504722,43.5440582681845,43.1235391172892,43.1870372521991,43.2904362931764,43.2419614828252,43.1911281146263,43.4891580202324,43.6150834705823,43.7268678515266,43.1957596297885,43.2309967201544,43.5136332861953,43.3527652970707,43.6975103568558,43.276620007664,43.1786062374133,43.1813206657299,43.2347657966042,43.2541310471354,43.1139879593503,43.4583471443985,43.6117265913705,43.6487634091034,43.4714636420245,43.3470172114943,43.5448763798587,43.1041377013636,43.1468604429681,43.4822216830008,43.472426807014,43.5913312206405,43.4274749478637,43.5369362022285,43.2775029637807,43.5207747021904,43.2713123232973,43.4505905081788,43.261399850748,43.1086753485352,43.3119639398365,43.3991047341662,43.6843242562712,43.5977577957626,43.679780033069,43.5316627089444,43.4984601891612,43.1309948062875,43.3990194978345,43.5217777012435,43.7070849902287,43.259257243882,43.379163911704,43.4814517630555,43.7201204228118,43.3813705621414,43.4230485920991,43.1080225823965,43.081233935958,43.4586907607362,43.4832070105457,43.3331073895824,43.4570639068869,43.5388815116902,43.5006618747946,43.186789527747,43.4844058187393,43.1295286020398,43.1713081890224,43.1956821229983,43.1723931440798,43.6693681225486,43.5582061672863,43.3912025123083,43.1549876540359,43.7163280313799,43.0661796001962,43.2299314705611,43.1494541655103,43.2850886185719,43.1660065418315,43.1401042122733,43.3944997726043,43.3845946572449,43.5066551541397,43.4058654491653,43.0915529539438,43.4004732018025,43.2904861652431,43.6631760918634,43.6312078589928,43.6110125628978,43.3041479128261,43.4557293887898,43.3385781501333,43.2546390126747,43.4550496684371,43.4847155192365,43.2269848569216,43.2314009199047,43.6422772075045,43.0880896105336,43.4489083598711,43.3530619582844,43.2305375734983,43.4151436339168,43.5219830857118,43.5010400596841,43.5250987650212,43.322854350094,43.2886059230189,43.208037471323,43.6277406378835,43.6224307183392,43.5029117757976,43.4822040738961,43.0835483286437,43.4943244933305,43.1119811879139,43.5290245018524,43.4338664432064,43.3702294626177,43.5812612970482,43.544047478907,43.4898728925411,43.0532087808653,43.076006790945,43.3508653577516,43.5072147468428,43.4943855638816,43.4688205222464,43.5235478505279,43.6928194739078,43.2741402693475,43.475835042458,43.195960304785,43.3384297064863,43.330881198098,43.1196937279108,43.421133380873,43.1565264969963,43.6629939248971,43.7391977394039,43.2219292727228,43.3258428295527,43.2418774491765,43.5101755134012,43.1971658604075,43.5592759008573,43.2676522023147,43.1683269012061,43.5148374965171,43.3066471801282,43.2392585713524,43.2666724523448,43.215088273584,43.2116579800329,43.4793255228449,43.1480833568851,43.1222237890185,43.1476369654766,43.689927611431,43.4986132621196,43.2391524352415,43.5960639018451,43.1118194116038,43.5783251306371,43.6541714507433,43.0885417202761,43.4763526033847,43.5279282377286,43.5075525292155,43.4682303756173,43.1222940197588,43.1340912607705,43.5261740305714,43.3478290321169],[1.19711689958787,1.67465321249141,1.40733914517086,1.23466982003177,1.45235709059117,1.08024227646508,1.69663839042615,1.16063196071087,0.630027295810722,0.876523616750338,1.9126890540875,1.59802248355832,1.54253961558269,1.22284117343948,1.50100149369161,0.885984727297181,1.58518657399128,1.59428754050264,0.927103946615059,0.936714918543258,0.811099530032211,0.720338296129187,1.4234802217528,0.812980521700584,1.45719757519083,0.870853000784643,0.58978440773231,1.32860593514316,1.48717428463468,1.56826612829607,0.940920125490109,0.563176975170438,1.50468935639109,1.62800264089402,1.55904333976648,1.37408416595192,1.57049140014047,1.55635109704377,0.917799838981589,1.37983318361289,0.647618615007458,0.826283852378279,1.13785075148926,0.635392089321417,0.517051843287805,0.6504633830013,0.874981056811905,0.883281317964328,1.07037082302962,1.23296502851698,1.40917840769347,0.676129523975891,0.799348401149536,1.5033271701727,0.902366762972351,1.43517976287944,0.781803633213512,0.541562803782042,0.862017943878316,0.692166779691498,0.741843449921534,0.616602001223047,1.44283623474114,1.32702562525642,1.32243416782817,1.49026679088106,0.878951038963553,1.34310601580727,0.516361948015474,0.611618209277199,1.53251269969501,1.55046545116631,1.60269334861063,1.35875623481126,1.07932091974813,0.882144155886392,1.55269257063421,0.757410160284465,1.48779925843416,0.811276437605901,0.781061742208092,0.892732735146829,1.29401091355674,1.39063082631062,1.5535322043188,1.43626757713276,1.23906859832545,1.62143889587349,0.534620520464826,0.91336350216589,1.31293134621656,1.36392279427203,0.603454676883738,0.957051570699584,1.4267181574414,1.43453580147968,0.833783202324974,1.50271616567364,0.832513175689507,0.671574867765764,1.40074408312873,1.66358623663332,0.935531452363352,1.23723873420018,1.52151338307337,1.42398508583618,0.700496840019569,1.24818070211694,0.777131512574069,0.722435470228168,0.61378097705364,0.781942133975189,1.45485855327415,1.56659367547433,1.24640643393185,0.492424489096728,1.38248270500751,0.761968940150201,0.666462240747272,0.7740212402499,0.809226946868501,0.657563909965661,0.576577888581483,0.885224796148388,0.920781534321932,1.47355656327742,0.863852349224461,0.75567868382479,0.778993037348182,0.707535377810891,1.28077130738176,1.5627487286761,1.57350648597844,0.767369557122417,1.52020530734358,0.767153757961862,0.716781183144642,1.5703475385135,1.58021444026189,0.636231011284035,0.906602470160665,1.52886635367423,0.557878007099457,1.30870352319544,0.709506309077281,0.597414951965233,1.52583387832118,1.59327241106765,1.51018354326964,1.45672188278277,0.701423886792738,0.91166217694569,0.831790599823555,1.26120811486063,1.53553506270647,1.39405423364641,1.3911764465571,0.79735885511786,1.52202091785559,0.596312728452447,1.40186089786613,1.53435820236533,0.753110859216723,1.5430798302923,1.47748397380296,1.47754210501506,0.718457358791768,0.752601296469353,0.918512861962766,1.35434706933354,1.37452774338551,1.056663799566,1.14164162611642,1.41238930567235,0.84744893106134,1.20850910060105,0.849401594228608,0.73637172323638,0.850651765843,0.726670468589839,1.26844518659176,0.691087739079575,1.50117661633373,1.35681912111841,0.739761078430344,0.800083448239716,0.574899586133377,1.19877356804683,0.745435727249419,1.53506687501796,0.69401349978002,0.570747231806334,1.08839562412105,0.824547797047692,0.722088779451856,0.949658426542352,0.595361228768989,0.662237195922434,1.35927247167793,0.704336517488353,0.803409570849515,0.542151276743093,1.35667224796704,1.28740365109007,0.971745009326253,1.43208666013034,0.549966744199819,1.33504722600489,1.48337820167348,0.701589913792889,1.69217491045458,1.43805611925248,1.44824622256336,1.38183233222054,0.669935906579891,0.485130833698604,1.34665740687016,0.952441655450329],[793.725393319377,0,2323.79000772445,2563.20112359526,2343.074902772,2782.08554864871,2782.08554864871,2580.69758011279,2814.24945589406,1989.97487421324,2323.79000772445,1824.82875908947,1824.82875908947,2615.3393661244,1749.28556845359,0,0,734.846922834953,0,0,0,0,1469.69384566991,300,300,519.615242270663,0,994.98743710662,948.683298050514,424.264068711929,300,0,2204.54076850486,793.725393319377,300,1438.74945699382,424.264068711929,0,0,3286.335345031,300,0,424.264068711929,300,300,948.683298050514,0,0,0,600,1374.77270848675,300,300,1670.32930884901,0,1307.6696830622,0,0,0,0,0,670.820393249937,300,3231.0988842807,1697.05627484771,0,0,2204.54076850486,0,300,424.264068711929,670.820393249937,948.683298050514,1236.9316876853,0,0,1081.6653826392,300,0,0,734.846922834953,0,424.264068711929,1849.32420089069,0,519.615242270663,1558.84572681199,300,0,0,1307.6696830622,424.264068711929,0,0,0,793.725393319377,900,0,424.264068711929,424.264068711929,1081.6653826392,300,0,424.264068711929,2509.98007960223,600,0,300,0,0,424.264068711929,300,1122.49721603218,300,600,0,600,0,0,0,0,0,0,0,0,0,0,300,519.615242270663,0,1081.6653826392,300,424.264068711929,0,0,0,0,670.820393249937,300,0,0,994.98743710662,1236.9316876853,3029.85148150862,0,0,0,0,424.264068711929,0,424.264068711929,0,0,948.683298050514,0,1236.9316876853,900,0,300,424.264068711929,2343.074902772,0,300,1081.6653826392,1615.54944214035,0,0,0,300,1643.1676725155,670.820393249937,0,424.264068711929,1697.05627484771,0,300,0,0,0,2284.73193175917,424.264068711929,0,1272.79220613579,994.98743710662,0,0,0,1161.89500386223,300,1800,424.264068711929,0,0,0,0,0,0,0,600,0,0,0,948.683298050514,1236.9316876853,0,14724.4694301696,300,2473.8633753706,1989.97487421324,424.264068711929,0,300,0,424.264068711929,519.615242270663,0,1122.49721603218,0],null,null,{"lineCap":null,"lineJoin":null,"clickable":true,"pointerEvents":null,"className":"","stroke":true,"color":["#FCB14B","#FCE47E","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FA0000","#FE720B","#FA0000","#FCB14B","#FE720B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FA0000","#FCE47E","#FA0000","#FE720B","#FCB14B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FA0000","#FE720B","#FE720B","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FE720B","#FE720B","#FA0000","#FA0000","#FA0000","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FE720B","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FE720B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCE47E","#FA0000","#FE720B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FA0000","#FE720B","#FE720B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FCE47E"],"weight":1,"opacity":0.5,"fill":true,"fillColor":["#FCB14B","#FCE47E","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FE720B","#FA0000","#FE720B","#FA0000","#FCB14B","#FE720B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FA0000","#FCE47E","#FA0000","#FE720B","#FCB14B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FA0000","#FE720B","#FE720B","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FE720B","#FE720B","#FA0000","#FA0000","#FA0000","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCE47E","#FA0000","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FA0000","#FCE47E","#FE720B","#FCB14B","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FA0000","#FCE47E","#FE720B","#FA0000","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCE47E","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCE47E","#FA0000","#FE720B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FA0000","#FCB14B","#FCE47E","#FE720B","#FA0000","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FCB14B","#FE720B","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FE720B","#FA0000","#FA0000","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCE47E","#FCB14B","#FCE47E","#FCE47E","#FCE47E","#FA0000","#FE720B","#FCE47E","#FA0000","#FE720B","#FE720B","#FA0000","#FE720B","#FCE47E","#FCB14B","#FCE47E","#FE720B","#FCB14B","#FCE47E","#FCB14B","#FCE47E"],"fillOpacity":0.2,"dashArray":null},["7","0","60","73","61","86","86","74","88","44","60","37","37","76","34","0","0","6","0","0","0","0","24","1","1","3","0","11","10","2","1","0","54","7","1","23","2","0","0","120","1","0","2","1","1","10","0","0","0","4","21","1","1","31","0","19","0","0","0","0","0","5","1","116","32","0","0","54","0","1","2","5","10","17","0","0","13","1","0","0","6","0","2","38","0","3","27","1","0","0","19","2","0","0","0","7","9","0","2","2","13","1","0","2","70","4","0","1","0","0","2","1","14","1","4","0","4","0","0","0","0","0","0","0","0","0","0","1","3","0","13","1","2","0","0","0","0","5","1","0","0","11","17","102","0","0","0","0","2","0","2","0","0","10","0","17","9","0","1","2","61","0","1","13","29","0","0","0","1","30","5","0","2","32","0","1","0","0","0","58","2","0","18","11","0","0","0","15","1","36","2","0","0","0","0","0","0","0","4","0","0","0","10","17","0","2409","1","68","44","2","0","1","0","2","3","0","14","0"],null,null,null,null,null]},{"method":"addLegend","args":[{"colors":["#FCE47E","#FCB14B","#FE720B","#FA0000"],"labels":["[0;12[","[12;21[","[21;32[","[32;217["],"na_color":null,"na_label":"NA","opacity":1,"position":"topleft","type":"unknown","title":"Number of restaurants<br>for 10 000 inhabitants","extra":null,"layerId":null,"className":"info legend"}]}],"limits":{"lat":[42.8688603421516,43.8291519648891],"lng":[0.485130833698604,1.9126890540875]}},"evals":[],"jsHooks":[]}</script>
-#                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+   
+  ?geom_sf
+  
+  add.alpha <- function(col, alpha=1){
+    if(missing(col))
+      stop("Please provide a vector of colours.")
+    apply(sapply(col, col2rgb)/255, 2, 
+          function(x) 
+            rgb(x[1], x[2], x[3], alpha=alpha))  
+  }
+  
+  add.alpha("#E84923",0.8)
+  
+  
+    ?scale_fill_continuous
+plot(map_ggplot)

@@ -1,4 +1,4 @@
-# Geovisualization and Spatial Analysis
+﻿# Geovisualization and Spatial Analysis
 ----
 Kim Antunez & Timothée Giraud
 
@@ -33,7 +33,7 @@ Kim Antunez & Timothée Giraud
 *  [Bistrographie avec SIRENE M. Garnier (2017)](https://github.com/mtmx/bistrographie)
  
 
-## Bases de données que l'on peut mobiliser
+## Bases de données mobilisées
 
 ### A. Données administratives nationales françaises : la base SIRENE des entreprises
 
@@ -115,44 +115,10 @@ Cette variable est systématiquement renseignée. Si une entreprise n'a qu'un se
 * geo_ligne : ligne d'adresse géocodée (G = géographique, N = normalisée, D = déclarée) 
 * geo_insee : code INSEE où l'adresse a été géocodée 
 
-### B. Données locales américaines : Louisville's Establishments 
-
-> A [database](https://data.louisvilleky.gov/dataset/establishments) which contains attributes of establishments that are currently inspected by and/or regulated by Louisville Metro Government.  Personal/identifying data has been removed.  EstablishmentID column can be joined to the EstablishmentID column in the Inspections table to show attributes of any inspections of the establishment. Modified Date : 2018-01-16. Data is produced by the department of public health and wellness of Louisville which protects and promotes the health, environment and well being of the people of Louisville, providing health-related programs and health office locations community wide.
-
-
-**avantages** : exemple de donnée locale en opendata, données non françaises
-
-**inconvénients** : peu d'information à part qu'il s'agit d'un restaurant et son nom
-
-Les données utilisées sont rangées dans [data/louisville](./data/louisville).
-
-
-#### Liste des variables utiles
-
-**1. PremiseName : Nom de l'établissement**
-
-Exemple : JERRY'S RESTAURANT
-
-**2. Est-Type : Type d'établissement**
-
-Ne sélectionner que les food service
-
-**3. Géolocalisation**
-
-* longitude (projection ?)
-* latitude (projection ? ) 
-* premiseStreetNo (numéro rue)
-* premiseStreet (nom rue)
-
-### C. OpenStreetMap
+### B. OpenStreetMap
 
 **TODO**
 
 ## Fonds de cartes mobilisés
 
-### Communes Françaises
-
-> Il s'agit du contour des 35 000 communes Françaises au 01/01/2017
-
-Les couches cartographiques sont rangées dans [data/carto](./data/carto).
-
+**TODO**

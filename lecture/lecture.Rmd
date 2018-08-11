@@ -1,0 +1,582 @@
+---
+title: "Geovisualization and Spatial Analysis"
+output:
+  rmdformats::material:
+    highlight: kate
+    thumbnails: false
+    lightbox: false
+    gallery: false
+    selfcontained: false
+---
+
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+## Global options
+library(knitr)
+library(rmdformats)
+
+## Global options
+options(max.print="75")
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE, #TRUE
+               prompt=FALSE,
+               tidy=TRUE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=75)
+
+
+
+# no margins
+knit_hooks$set(nm = function(before, options, envir){
+  if (before){
+    par(mar=c(0,0,0,0))
+  } 
+})
+
+# title margins
+knit_hooks$set(sm = function(before, options, envir){
+  if (before){
+    par(mar=c(0,0,1.2,0))
+  } 
+})
+
+
+```
+
+# The R Spatial Ecosystem {.tabset}
+
+A few main packages are dedicated to spatial data handling like import/export, display, geoprocessing, spatial ststistics. 
+
+## "Historical" Packages
+
+* `rgdal`: interface between R and GDAL ([Geospatial Data Abstraction Library](http://www.gdal.org/)) and [PROJ4](https://github.com/OSGeo/proj.4) libraries.
+
+* `sp`: classes and methods for spatial data in R.
+
+* `rgeos`: interface between GEOS ([Geometry Engine - Open Source](http://trac.osgeo.org/geos/)) library and R:  area, perimeter, distances, dissolve, buffer, overlap, union, contains...
+
+These packages are still widely used. 
+
+## Simple Features for R 
+
+* `sp`, `rgeos` and `rgdal` functionnalities in one package. 
+
+* Easier data handling, simpler objects.
+
+* Main author and maintainer: Edzer Pebesma (also `sp` author)
+
+* Compatibility with the pipe synthax and `tidyverse` operators.
+
+* First release:  October 20, 2016  
+
+* Website: [Simple Features for R](https://r-spatial.github.io/sf/index.html)
+
+</br>
+**sf objects data structure:**
+
+<img src="./img/sf.png" alt="format sf" width="800">
+
+## Using `sf` {.tabset}
+
+### Data Import {.tabset}
+```{r}
+library(sf)
+mtq <- st_read("../data/mtq/martinique.shp")
+```
+
+
+### Data Display
+Default
+```{r, nm=TRUE}
+plot(mtq)
+```
+
+Only geometry
+```{r, nm=TRUE}
+plot(st_geometry(mtq))
+```
+
+
+### Centroids Extraction
+```{r, nm=TRUE}
+mtq_c <- st_centroid(mtq)
+plot(st_geometry(mtq))
+plot(st_geometry(mtq_c), add=TRUE, cex=1.2, col="red", pch=20)
+```
+
+### Distance Matrix
+```{r, nm=TRUE}
+mat <- st_distance(x=mtq_c,y=mtq_c)
+mat[1:5,1:5]
+```
+
+### Polygons Aggregation 
+```{r, nm=TRUE}
+mtq_u <- st_union(mtq)
+plot(st_geometry(mtq), col="lightblue")
+plot(st_geometry(mtq_u), add=T, lwd=2, border = "red")
+```
+
+
+### Buffer Zone
+```{r, nm=TRUE}
+mtq_b <- st_buffer(x = mtq_u, dist = 5000)
+plot(st_geometry(mtq), col="lightblue")
+plot(st_geometry(mtq_u), add=T, lwd=2)
+plot(st_geometry(mtq_b), add=T, lwd=2, border = "red")
+
+```
+
+
+### Polygon Intersection 
+```{r, nm=TRUE}
+m <- rbind(c(700015,1624212), c(700015,1641586), c(719127,1641586), 
+           c(719127,1624212), c(700015,1624212))
+p <- st_sf(st_sfc(st_polygon(list(m))), crs = st_crs(mtq))
+plot(st_geometry(mtq))
+plot(p, border="red", lwd=2, add=T)
+```
+
+```{r, nm=TRUE, warning=F}
+mtq_z <- st_intersection(x = mtq, y = p)
+plot(st_geometry(mtq))
+plot(st_geometry(mtq_z), col="red", border="green", add=T)
+```
+
+
+### Voronoi Polygons  
+<small>google: "st_voronoi R sf" (https://github.com/r-spatial/sf/issues/474 & https://stackoverflow.com/questions/45719790/create-voronoi-polygon-with-simple-feature-in-r)
+</small>
+```{r, nm=TRUE}
+mtq_v <- st_voronoi(x = st_union(mtq_c))
+mtq_v <- st_intersection(st_cast(mtq_v), st_union(mtq))
+mtq_v <- st_join(x = st_sf(mtq_v), y = mtq_c, join=st_intersects)
+mtq_v <- st_cast(mtq_v, "MULTIPOLYGON")
+plot(st_geometry(mtq_v), col='lightblue')
+```
+
+
+
+# Maps with R  {.tabset}
+
+Several solutions are available:
+
+- `ggplot2` users can have a look to `ggplot2` mapping features (geom_sf) that can mix nicely with `ggspatial`.  
+- For more advanced mapping features in a *ggplot2-like* syntax have a look to `tmap`
+- `cartography` is based on base graphics and allow most of basic and advanced cartographic representations.  <small><small>Full disclosure: the speaker is the maintainer of cartography.</small></small> 
+
+Here we will focus on `cartography` and do small examples with `ggplot2`. 
+
+## `cartography` {.tabset}
+
+### Data Preparation
+
+```{r, eval=TRUE}
+library(sf)
+# Import geo layer
+sm <- st_read(dsn = "../data/rhone/seine_maritime.geojson", stringsAsFactors = F)
+dep <- st_read(dsn = "../data/rhone/dep.geojson", stringsAsFactors = F)
+# change projection (lambert93)
+sm <- st_transform(sm, 2154)
+dep <- st_transform(dep, 2154)
+
+# Import dataset  
+csp <- read.csv("../data/rhone/data_seine_maritime.csv")
+# merge geolayer and dataset
+sm <- merge(sm, csp, by="INSEE_COM", all.x=TRUE)
+```
+
+
+### Proportional symbols
+```{r}
+library(cartography)
+
+plot(st_geometry(sm))
+propSymbolsLayer(sm, var = "act")
+title("Active Population")
+```
+
+
+```{r, fig.height=4.75}
+# Custom map of active population
+par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+bb <- st_bbox(sm)
+plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+plot(st_geometry(sm), col="cornsilk2", border = NA, lwd = 0.5, add=T)
+propSymbolsLayer(sm, var = "act", col="darkblue", inches = 0.5, 
+                 border = "white", lwd=0.7, symbols = "square",
+                 legend.style = "e", legend.pos="topleft",
+                 legend.title.txt = "Labor Force\n(2014)", 
+                 legend.values.rnd = 0)
+barscale(size = 10)
+north(pos = "topright", col = "darkblue")
+layoutLayer(title = "Workforce in Seine-Maritime", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            col = "darkblue", coltitle = "white", 
+            frame = TRUE, scale = NULL, north = FALSE)
+
+
+
+```
+
+### Typology Map
+
+```{r, fig.height=4.75}
+par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+typoLayer(sm, var = "cat", 
+          border = "ivory", lwd = 0.5, 
+          legend.values.order = c("agr", "art", "cad", "int", "emp", "ouv"),
+          col =c("#e3b4a2", "#a2d5d6", "#debbd4", "#b5dab6", "#afc2e3", "#e9e2c1"),
+          add=TRUE, legend.pos = "n")
+
+legendTypo(title.txt = "Dominant Category", 
+           col = c("#e3b4a2", "#a2d5d6", "#debbd4", "#b5dab6", "#afc2e3", "#e9e2c1"), 
+           categ = c("Agriculteurs", "Artisans","Cadres", 
+                     "Prof. Inter.", "Employés", "Ouvriers"), 
+           nodata = F)
+barscale(size = 10)
+north(pos = "topright", col = "darkblue")
+layoutLayer(title = "Workforce Distribution in Seine-Maritime", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            col = "darkblue", coltitle = "white", 
+            frame = TRUE, scale = NULL, north = FALSE)
+
+```
+
+
+### Choropleth Map
+
+```{r, fig.height=4.75}
+sm$pcad <- 100 * sm$cad / sm$act
+
+bks <- getBreaks(v = sm$pcad, method = "quantile", nclass = 6)
+cols <- carto.pal("green.pal", 3,"wine.pal",3)
+par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+choroLayer(sm, var = "pcad", breaks = bks, 
+           col = cols, border = "grey80", 
+           lwd = 0.4, legend.pos = "topleft", 
+           legend.title.txt = "Share of managers\n(%)", add=T)
+layoutLayer(title = "Managers", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            theme = "green.pal", 
+            col = "darkred", coltitle = "white", 
+            postitle = "center",
+            frame = TRUE, scale = 10)
+north(pos = "topright", south = TRUE)
+
+
+```
+
+```{r, fig.height=4.75, cache = T}
+library(cartogram)
+sm_c1 <- cartogram_cont(sm, "act", 3)
+sm$pcad <- 100 * sm$cad / sm$act
+
+bks <- getBreaks(v = sm$pcad, method = "quantile", nclass = 6)
+cols <- carto.pal("green.pal", 3,"wine.pal",3)
+par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+choroLayer(sm_c1, var = "pcad", breaks = bks, 
+           col = cols, border = "grey80", 
+           lwd = 0.4, legend.pos = "topleft", 
+           legend.title.txt = "Share of managers\n(en %)", add=T)
+layoutLayer(title = "Managers", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            theme = "green.pal", 
+            col = "darkred", coltitle = "white", 
+            postitle = "center",
+            frame = TRUE, scale = 10)
+north(pos = "topright", south = TRUE)
+```
+
+
+### Gridded Map
+These maps may allow to hide or, at least, diminish the MAUP. 
+```{r, fig.height=4.75, cache = T}
+sqrt(quantile(st_area(sm), .9))
+```
+
+
+```{r, fig.height=4.75, cache = T}
+grid <- getGridLayer(x = sm, cellsize = 3900*3900, 
+                     type = "regular", var = c('cad', 'act'))
+grid$pcad <- 100*grid$cad/grid$act
+par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+choroLayer(grid, var = "pcad", breaks=bks, 
+           col = cols, border = "grey80", 
+           lwd = 0.4, legend.pos = "topleft", 
+           legend.title.txt = "Share of managers\n(en %)", add=T)
+layoutLayer(title = "Managers", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            theme = "green.pal", 
+            col = "darkred", coltitle = "white", 
+            postitle = "center",
+            frame = TRUE, scale = 10)
+north(pos = "topright", south = TRUE)
+
+```
+
+
+### Smoothed Map
+
+```{r, fig.height=4.75, cache = T}
+grid$cad100 <- grid$cad * 100
+par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+plot(st_geometry(dep), col = "ivory", border="ivory3", 
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+smoothLayer(x = grid, var = "cad100", var2 = "act", 
+            typefct = "exponential", 
+            span = 4000, beta = 2, breaks = bks, col = cols,
+            legend.pos = "topleft", mask = st_buffer(sm, 0),
+            legend.title.txt = "Share of managers\n(%)*", 
+            border = "grey90", lwd = 0.2, add=T)
+layoutLayer(title = "Managers", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            theme = "green.pal", 
+            col = "darkred", coltitle = "white", 
+            postitle = "center",
+            frame = TRUE, scale = 10)
+north(pos = "topright", south = TRUE)
+text(x = 518000, y = 6921123, font = 3, cex = 0.8,
+     labels = "*Lissage par potentiels\n fonction exponnentielle\n span = 2.5km, beta = 2")
+
+```
+
+## `ggplot2`{.tabset}
+
+Proportional symbols layer:
+
+```{r, fig.height=4.75}
+
+library(ggplot2)
+
+ggplot() +
+  geom_sf(data = dep, colour = "ivory3",fill = "ivory") +
+  geom_sf(data = sm %>%  st_centroid(),
+          
+          aes(size= cad), colour="#E84923CC", show.legend = 'point') +
+  scale_size(name = "Active population",
+             breaks = c(100,1000,5000),
+             range = c(0,20)) +
+  coord_sf(crs = 2154, datum = NA,
+           xlim = st_bbox(sm)[c(1,3)],
+           ylim = st_bbox(sm)[c(2,4)]
+  ) +
+  theme_minimal() +
+  theme(panel.background = element_rect(fill = "azure",color=NA)) +
+  labs(title = "Active population",
+    caption = "Insee, 2018\nKim & Tim, 2018")
+```
+
+Choropleth layer:
+
+```{r, fig.height=4.75}
+
+ggplot() +
+  geom_sf(data = dep, colour = "ivory3",fill = "ivory") +
+  geom_sf(data = sm, aes(fill = pcad), colour = "grey80") +
+  scale_fill_gradientn(name = "Share of managers\n(%)",
+                       
+                       colours = carto.pal("green.pal", 3,"wine.pal",3),
+                       values=bks/max(bks))+
+  coord_sf(crs = 2154, datum = NA,
+           xlim = st_bbox(sm)[c(1,3)],
+           ylim = st_bbox(sm)[c(2,4)]
+  ) +
+  theme_minimal() +
+  theme(panel.background = element_rect(fill = "azure",color=NA)) +
+  labs(title = "Managers",
+       caption = "Insee, 2018\nKim & Tim, 2018")
+```
+
+# Exploration of sirene & osm db for restaurants  {.tabset}
+
+[CRAN Task View: Analysis of Spatial Data](https://CRAN.R-project.org/view=Spatial)
+
+See file data_prep.R for data extraction. 
+
+```{r}
+# spatial data management
+library(sf)
+# cartography
+library(cartography)
+# smooth density computation
+library(spatstat)
+library(raster)
+library(maptools)
+# interactive mapping
+library(mapview)
+```
+
+
+## Display Points
+```{r, cache=TRUE}
+# load data
+adm <- readRDS("../data/iris_p13.rds")
+feat_sir <- readRDS("../data/sir_p13.rds")
+feat_osm <- readRDS("../data/osm_p13.rds")
+
+nrow(feat_sir)
+nrow(feat_osm)
+
+par(mar = c(0,0,1.2,0), mfrow = c(1,2))
+
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+plot(st_geometry(feat_sir), col = "red", pch = 20, add=T, cex = 0.5)
+layoutLayer(title = "SIR", sources="", author="", scale = NULL, frame=FALSE)
+legend(x = "topright", legend = "= 1 restaurant", pch = 20, pt.cex = 0.5, cex = 0.7, col = "red")
+
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+plot(st_geometry(feat_osm), col = "red", pch = 20, add=T, cex = 0.5)
+layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=FALSE)
+```
+
+
+
+
+## Count Points in Units
+
+### In admin units
+
+```{r, cache=TRUE}
+inter_osm <- st_intersects(adm, feat_osm)
+inter_sir <- st_intersects(adm, feat_sir)
+
+adm <- st_sf(adm[,1:2,drop = T], 
+             n_osm = sapply(X = inter_osm, FUN = length), 
+             n_sir = sapply(X = inter_sir, FUN = length), 
+             geometry = st_geometry(adm))
+
+par(mar = c(0,0,1.2,0), mfrow = c(1,2))
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+propSymbolsLayer(adm, var = "n_sir", inches = 0.1)
+layoutLayer(title = "SIR", sources="", author="", scale = NULL, frame=FALSE)
+
+plot(st_geometry(adm), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+propSymbolsLayer(adm, var = "n_osm", inches = 0.1)
+layoutLayer(title = "OSM", sources="", author="", scale = .5, north = T, frame=FALSE)
+
+
+# plot(adm$n_sir, adm$n_osm, asp = T, xlim = c(0,55), pch = 21, bg = "red")
+# text(adm$n_sir, adm$n_osm, labels = adm$CODE_IRIS, cex = 0.5, pos = 2)
+# x <-lm(formula = adm$n_osm~adm$n_sir)
+# abline(a = x$coefficients )
+
+
+```
+
+
+### In a regular grid
+
+```{r, cache=TRUE}
+fufun2 <- function(feat,adm, cs = 500){
+  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
+  x <- st_intersects(grid, feat)
+  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
+  plot(adm$geometry, col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+  choroLayer(gg[gg$n>0,], var = "n", border= NA, breaks = c(1,4,6,9,12,14,17,19,22), 
+             col = carto.pal("wine.pal", 8), add=TRUE)
+}
+```
+
+
+```{r, cache=TRUE}
+par(mar = c(0,0,1.2,0), mfrow = c(2,3))
+fufun2(feat_sir, adm, 50)
+fufun2(feat_sir, adm, 100)
+fufun2(feat_sir, adm, 150)
+fufun2(feat_osm, adm, 50)
+fufun2(feat_osm, adm, 100)
+fufun2(feat_osm, adm, 150)
+```
+
+
+## Interactive Visualisation
+
+Explore datasets interactively
+
+The default is not bad:
+```{r, cache=TRUE}
+mapview(feat_sir) + mapview(feat_osm, col.regions = "red")
+```
+
+`mapview` allow hightly customizable maps:
+
+```{r, cache=TRUE}
+mapview(feat_sir, map.types = "OpenStreetMap", col.regions = "#940000", 
+        label = paste(feat_sir$L2_NORMALISEE, feat_sir$NOMEN_LONG, sep=" - "),
+        color = "white", legend = TRUE, layer.name = "SIRENE", 
+        homebutton = FALSE, lwd = 0.5) +
+  mapview(feat_osm, col.regions = "#000094", color = "white", legend = TRUE, 
+          label = feat_osm$name,
+          lwd = 0.5, layer.name = "OSM",  homebutton = FALSE)
+ 
+```
+
+
+These maps, as appealing as they seem to be, are not really suitable for displaying geostatistical info. 
+For data exploration they are really useful. 
+
+
+## Smooth Density Analysis
+
+Define a function that compute smoothed restaurant density and map it.
+KDE method
+
+
+```{r, cache=TRUE}
+fufun <- function(feat, adm, title, sigma = 100,res = 50){
+  bb <- as(feat, "Spatial")
+  bbowin <- as.owin(as(adm, "Spatial"))
+  pts <- coordinates(bb)
+  p <- ppp(pts[,1], pts[,2], window=bbowin)
+  ds <- density.ppp(p, sigma = sigma, eps = res)
+  rasdens <- raster(ds) * 1000 * 1000
+  proj4string(rasdens) <- "+init=epsg:2154"
+  rasdens <- rasdens+1
+  bks <- getBreaks(values(rasdens), nclass = 12, method = "equal")
+  cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
+  plot(rasdens, breaks = bks, col=cols, add = T,legend=F)
+  legendChoro(pos = "topright",cex = 0.7, title.cex = 0.7,
+              title.txt = "resto per km2)",
+              breaks = bks-1, nodata = FALSE,values.rnd = 0,
+              col = cols)
+  layoutLayer(title = paste0(title), scale = .5,
+              tabtitle = TRUE, frame = FALSE,
+              author = "Map data © OpenStreetMap contributors, under CC BY SA. SIRENE 2018", 
+              sources = "cartography 2.0.2") 
+  return(invisible(rasdens))
+}
+
+```
+
+
+
+```{r, cache=TRUE, fig.width=10}
+par(mar = c(0,0,1.2,0), mfrow = c(2,3))
+fufun(feat_sir, adm, "SIR 50", 50, 20)
+fufun(feat_sir, adm, "SIR 100", 100, 20)
+fufun(feat_sir, adm, "SIR 250", 250, 20)
+fufun(feat_osm, adm, "OSM 50", 50, 20)
+fufun(feat_osm, adm, "OSM 100", 100, 20)
+fufun(feat_osm, adm, "OSM 250", 250, 20)
+```
+
+
+# 
+
+--------------------------------------------
+
+--------------------------------------------
+
+**reproducibility**
+
+```{r}
+sessionInfo()
+```

@@ -52,13 +52,15 @@ knit_hooks$set(sm = function(before, options, envir){
 
 ```
 
-# Exercice 1 : Manipuler les objets sf et des data.frames associés
+# Exercice 1 : Manipulate sf objects and associated data.frames
 
-1. Charger la couche cartographique des iris du département 31 "iris_31.rds" dans R. Est-ce que la fonction `sf::st_read` fonctionnerait également ? Pourquoi ?
+1. Load in R the iris[^1] map layer "iris_31.rds" of the french department called Haute-Garonne (numbered 31). Would the `sf :: st_read` function also work? Why ?
+
+[^1]: In French, IRIS is an acronym of ‘aggregated units for statistical information’. Their target sizes are 2000 residents per basic unit.
 
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-Utilisez la fonction `readRDS`.
+Use the `readRDS` function.
 </details>
 
 ```{r, solution = TRUE}
@@ -68,34 +70,35 @@ iris_31 <- readRDS("../data/iris_31.rds")
 ```
 
 ```{block, solution = TRUE}
-Cela ne fonctionne pas car il ne s'agit pas d'un shapefile mais d'un fichier déjà mis au format R. Il suffit alors simplement de le charger avec la fonction readRDS.
+It would not work because iris_31 is not a shapefile but a file already R formatted. Simply load it with the `readRDS` function.
 ```
 
-2. Afficher simplement le fond de carte du département 31 avec l'instruction `plot(iris_31)`.
-Que remarquez-vous ? 
+2. Display the basemap of department 31 with `plot(iris_31)`.
+What do you notice ?
 
 
 ```{r, nm=TRUE, solution = TRUE}
 plot(iris_31)
-# On remarque que R effectue un graphique par variable présent dans le fichier sf, ici 3.
-
-
+# We notice that R performs 3 graphs: one graph per variable in the sf file.
 ```
 
 
-3. Quel est le rôle de la fonction `sf::st_geometry` ? Quelle solution proposez-vous alors ? 
+3. What is the role of the `sf::st_geometry` function? What solution do you propose then?
 
 ```{r, nm=TRUE, solution = TRUE}
 # ?sf::st_geometry
-# Cette fonction permet d'isoler les informations de l'objet sf relatives à sa géométrie et d'ainsi mettre de côté les autres variables ici CODE_IRIS, P14_POP et INSEE_COM
+# This function makes it possible to isolate the geography information of the sf object so that we put aside other variables (here CODE_IRIS, P14_POP and INSEE_COM).
 plot(st_geometry(iris_31))
 ```
 
-4. En quelle projection est la couche cartographique ? Cartographiez-la dans une autre projection. 
+4. In which projection is the map layer? Map it with another projection.
 
+```{block, box.title=" Information",box.type = "advice"}
+Test the Azimuthal Equidistant projection with "crs="+proj=aeqd +lat_0=90 +lon_0=0" to see a clear difference and create a layer called "iris_31_aeqd".
+```
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-Utilisez la fonction `sf::st_crs` pour deviner la projection et `sf::st_transform` pour changer la projection. Vous pouvez par exemple tester l'Azimuthal Equidistant projection telle que "crs="+proj=aeqd +lat_0=90 +lon_0=0" pour voir une nette différence. 
+Use the `sf::st_crs` function to guess the projection and `sf::st_transform` to change the projection.
 </details>
 
 
@@ -104,24 +107,44 @@ Utilisez la fonction `sf::st_crs` pour deviner la projection et `sf::st_transfor
 st_crs(iris_31)
 par(mar = c(0,0,0,0), mfrow = c(1,2))
 plot(st_geometry(iris_31))
-plot(st_transform(st_geometry(iris_31), crs="+proj=aeqd +lat_0=90 +lon_0=0"))
+iris_31_aeqd <- st_transform(iris_31, crs="+proj=aeqd +lat_0=90 +lon_0=0")
+plot(st_geometry(iris_31_aeqd))
 ```
 
 ```{r, nm=TRUE, echo=FALSE}
 par(mar = c(0,0,0,0), mfrow = c(1,2))
 plot(st_geometry(iris_31))
-plot(st_transform(st_geometry(iris_31), crs="+proj=aeqd +lat_0=90 +lon_0=0"))
+iris_31_aeqd <- st_transform(iris_31, crs="+proj=aeqd +lat_0=90 +lon_0=0")
+plot(st_geometry(iris_31_aeqd))
 ```
 
-5. A partir de la couche "iris_31", créez une couche cartographique appelée "com_31" qui correspond aux communes du département 31. Gardez également dans cette nouvelle couche les informations sur la population présente dans chaque commune. 
+5. Calculate the distance matrix between the 5 first iris of department 31. Do you get the same distance matrix if you are working on a layer projected in another projection?
 
 ```{block, box.title=" Information",box.type = "advice"}
-La couche cartographique "iris_31"" contient les codes communes dans sa variable INSEE_COM et la population municipale de 2014 dans sa variable P14_POP.
+Use map layers called "iris_31" and "iris_31_aeqd"
+```
+
+```{r, nm=TRUE, solution=TRUE}
+mat <- st_distance(x = iris_31[1:5,], y = iris_31[1:5,])
+mat
+
+mat_aeqd <- st_distance(x = iris_31_aeqd[1:5,], y = iris_31_aeqd[1:5,])
+mat_aeqd
+
+identical(mat,mat_aeqd)
+# The two matrices are different
+```
+
+
+6. Using the layer called "iris_31", create a new aggregated map layer called "com_31" which corresponds to the municipalities of department 31. Also keep in this new layer the information on the population in each municipality.
+
+```{block, box.title=" Information",box.type = "advice"}
+The map layer called "iris_31" contains the 5 digit codes of municipalities in its variable INSEE_COM and the 2014 population in its column P14_POP.
 ```
 
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-Utilisez les fonctions classiques du package dplyr `select`, `group_by` et `summarize` qui s'appliquent aussi sur des objets de type sf.
+Use the classic functions of the dplyr package: `select`, `group_by` et `summarize`. These functions also work with sf objects.
 </details>
 
 
@@ -146,12 +169,11 @@ com_31 <- iris_31 %>%
 plot(st_geometry(com_31))
 ```
 
-6. En utilisant les données contenues dans "sir_31", ajoutez à cette couche le nombre de restaurants par commune. 
+7.  Using the data contained in "sir_31", add to this layer the number of restaurants per municipality. 
 
 ```{block, box.title=" Information",box.type = "advice"}
-Le code commune n'est pas présent dans la base "sir_31". Pour l'obtenir, il faut créer une variable INSEE_COM (5 chiffres) qui contatène les variables DEPET (2 chiffres) et COMET (3 chiffres).
+The code of each municipality isn't in the "sir_31" database. To create it, you have to create a variable called INSEE_COM (5 digits) which concatenates the DEPET (2 digits) and COMET (3 digits) variables.
 ```
-
 
 ```{r, nm=TRUE, solution = TRUE}
 sir_31 <- readRDS("../data/sir_31.rds")
@@ -167,19 +189,19 @@ com_31 <- left_join(com_31,
   mutate(nb_of_rest=ifelse(is.na(nb_of_rest),0,nb_of_rest))
 ```
 
-7. Agrégez toutes les informations présentes dans "com_31" au niveau des intercommunalités (EPCI). 
+8. Aggregate all the information present in "com_31" at the level of french intercommunalites (called EPCI). 
 
 ```{block, box.title=" Information",box.type = "advice"}
-Il faut utiliser la table de passage "table_MAUP.rds" pour avoir une correspondance entre le code communal (CODGEO) et le code de l'intercommunalité (EPCI).
+You have to use the database "table_MAUP.rds" to have a match between the municipality code (CODGEO) and intercommunality code (EPCI).
 ```
 
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
-table_passage <- readRDS("../data/table_MAUP.rds") %>% 
+table_MAUP <- readRDS("../data/table_MAUP.rds") %>% 
   select(CODGEO,EPCI)
 
 epci_31  <- com_31 %>%
-  left_join(table_passage,by=c("INSEE_COM"="CODGEO")) %>% 
+  left_join(table_MAUP,by=c("INSEE_COM"="CODGEO")) %>% 
   group_by(EPCI) %>% 
   summarize(P14_POP=sum(P14_POP),nb_of_rest= sum(nb_of_rest)) %>% 
   st_cast("MULTIPOLYGON")
@@ -189,11 +211,11 @@ plot(st_geometry(epci_31))
 
 
 ```{r, nm=TRUE, echo=FALSE}
-table_passage <- readRDS("../data/table_MAUP.rds") %>% 
+table_MAUP <- readRDS("../data/table_MAUP.rds") %>% 
   select(CODGEO,EPCI)
 
 epci_31  <- com_31 %>%
-  left_join(table_passage,by=c("INSEE_COM"="CODGEO")) %>% 
+  left_join(table_MAUP,by=c("INSEE_COM"="CODGEO")) %>% 
   group_by(EPCI) %>% 
   summarize(P14_POP=sum(P14_POP),nb_of_rest= sum(nb_of_rest)) %>% 
   st_cast("MULTIPOLYGON")
@@ -203,14 +225,14 @@ plot(st_geometry(epci_31))
 
 
 ```{block, box.title="Information",box.type = "advice"}
-On peut remarquer que le nombre de restaurants est très faible voire nul dans la plupart des communes. On va donc vouloir créer une couche cartographique qui utilise partiellement le zonage communal et partiellement le zonage en EPCI. 
+We can notice that the number of restaurants is very low or even equals to zero in most municipalities. We will therefore want to create a new map layer that partially uses the zoning of the municipalities and partially the EPCI zoning.
 ```
 
-8. On souhaite cartographier le nombre de restaurants au niveau communal si son EPCI contient plus de 100 restaurants et au niveau intercommunal si l'EPCI contient moins de 100 restaurants.Créez une couche cartographique qui réponde à ce besoin. 
+9. We want to map the number of restaurants at the level of municipalities if its EPCI (intercommunality) contains more than 100 restaurants and at the level of intercommunalities if the intercommunality contains less than 100 restaurants. Create a map layer that meets this need.
 
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-Commencez par créer les couches EPCI_less100 et COM_more100 qui correspondent respectivement aux EPCI qui contiennent moins de 100 restaurants et aux communes qui appartiennent à un EPCI contenant plus de 100 restaurants. Puis, utilisez l'instruction `do.call(rbind, list(EPCI_less100,COM_more100))` pour les fusionner.
+Start by creating the layers EPCI_less100 and COM_more100 corresponding respectively to the EPCIs which contain less than 100 restaurants and to the municipalities which belong to an EPCI containing more than 100 restaurants. Then, use the `do.call(rbind, list(EPCI_less100,COM_more100))` statement to merge them.
 </details>
 
 
@@ -218,7 +240,7 @@ Commencez par créer les couches EPCI_less100 et COM_more100 qui correspondent r
 EPCI_less100 <- epci_31 %>% filter(nb_of_rest < 100) %>% 
   setNames(c("territory","P14_POP","nb_of_rest","geometry"))
 
-COM_more100 <- left_join(com_31,table_passage,by=c("INSEE_COM"="CODGEO")) %>% 
+COM_more100 <- left_join(com_31,table_MAUP,by=c("INSEE_COM"="CODGEO")) %>% 
   filter(!EPCI%in%EPCI_less100$territory) %>% 
   select(-EPCI) %>% 
   setNames(c("territory","P14_POP","nb_of_rest","geometry"))
@@ -241,7 +263,7 @@ plot(st_geometry(mix_31), col="lightblue")
 EPCI_less100 <- epci_31 %>% filter(nb_of_rest < 100) %>% 
   setNames(c("territory","P14_POP","nb_of_rest","geometry"))
 
-COM_more100 <- left_join(com_31,table_passage,by=c("INSEE_COM"="CODGEO")) %>% 
+COM_more100 <- left_join(com_31,table_MAUP,by=c("INSEE_COM"="CODGEO")) %>% 
   filter(!EPCI%in%EPCI_less100$territory) %>% 
   select(-EPCI) %>% 
   setNames(c("territory","P14_POP","nb_of_rest","geometry"))
@@ -264,11 +286,13 @@ plot(st_geometry(mix_31), col="lightblue")
 
 ####{}
 
-9. A l'aide du package {cartography}, ajoutez simplement à cette carte un rond proportionnel au nombre de restaurants sur chacun de ces territoires.
+10. Using the {cartography} package, simply add to each territory of this map a proportional circle layer related to the number of restaurants.
+
+?propSymbolsLayer
 
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-C'est la fonction `propSymbolsLayer` qui permet de dessiner des ronds proportionnels. 
+The `propSymbolsLayer` function allows you to draw proportional circles.
 </details>
 
 
@@ -285,25 +309,20 @@ propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
 ```
 
 
-# Exercice 2 : Cartographie statique et interactive
+# Exercise 2 : Map with cartography and ggplot2 packages
 
-```{block,box.title="Remarque pour Timothée",box.colour="#FF0099"}
-Réaliser une carte avec tous les packages présentés par Timothée dans la partie "Maps with R".
-En plus de cartography, leaflet et mapview, j'ai fait un exemple rapide avec ggplot2 ici car c'est un outil qui me semble important. A discuter de si on ajoute un petit exemple également dans ton document ?
-=> En attente de la partie de Timothée sur leaflet et mapview pour continuer. 
-```
+1. Data preparation:
 
-1. Préparation des données : 
+* Load in R "fra.shp": the map layer of the borders of the French metropolitan territory 
+* Using the layer called "mix_31" (see previous exercise), create a variable called "nb_rest_10000inhab" which corresponds to the number of restaurants per 10,000 inhabitants in each territory
+* Create the vector "bks" which corresponds to the breaks of the quantiles (n = 6) of the variable called "nb_rest_10000inhab" and remove duplicated elements in this vector
+* Create the vector "cols" which corresponds to a orange sequential palette (n = 4)
+* Finally, add to the layer "mix_31" a variable called "typo" which indicates the class of the territory according to the discretization contained in "bks" for the  "nb_rest_10000inhab" variable.
 
-* Chargez dans R le fond cartographique des contours du territoire métropolitain français "fra.shp"
-* En utilisant la couche "mix_31" de l'exercice précédent, créez une variable "nb_rest_10000inhab" qui correspond au nombre de restaurants pour 10 000 habitants sur le territoires
-* Créez le vecteur "bks" qui correspond aux breaks des quantiles (n=6) sur la variable "nb_rest_10000inhab" en enlevant les doublons de ce vecteur
-* Créez le vecteur "cols" qui correspond à un dégradé de orange (n=4)
-* Enfin, ajoutez à la couche "mix_31" la variable "typo" qui indique directement la classe de discrétisation à partir des éléments contenus dans "bks" à appliquer à la variable "nb_rest_10000inhab" 
 
 ```{block, box.title="Information",box.type = "advice"}
-Pour la création de bks et cols, on utilisera les fonctions `getBreaks` et `carto.pal` du package {cartography}.
-Pour la création de la variable typo, vous pouvez utiliser la fonction `cut` en appliquant les paramètres digit.lab=2 et include.lowest = TRUE. 
+For the creation of bks et cols, use the `getBreaks` et `carto.pal` functions of the  {cartography} package.
+For the creation of the "typo" variable, you can use the `cut` function and apply the parameters digit.lab = 2 and include.lowest = TRUE.
 ```
 
 ```{r, solution=TRUE}
@@ -318,7 +337,7 @@ cols <- carto.pal("orange.pal", 4)
 mix_31 <- mix_31 %>% mutate(typo = cut(nb_rest_10000inhab,breaks = bks, dig.lab = 2, include.lowest = TRUE))
 ```
 
-2. A l'aide du package cartography, réalisez cette carte qui contient en applat de couleur la variable "nb_rest_10000inhab" et en rond proportionnel la variable "nb_of_rest". Réalisez la même chose avec le package ggplot2.
+2. With the help of {cartography} package, make the following map which contains in a choropleth layer the variable "nb_rest_10000inhab" and in a proportional circle layer the variable "nb_of_rest". Do the same thing with the ggplot2 package.
 
 ####{.tabset}
 
@@ -370,7 +389,7 @@ plot(map_ggplot)
 
 ####{}
 
-Avec cartography :
+With cartography :
 
 ```{r, eval=FALSE, solution=TRUE}
 par(mar = c(0.2, 0.2, 1.4, 0.2), bg = "azure")
@@ -388,7 +407,7 @@ layoutLayer(title = "Restaurants", sources = "Insee, 2018", author = "Kim & Tim,
 north(pos = "topright", south = TRUE)
 ```
 
-Avec ggplot2 :
+With ggplot2 :
 
 ```{r, eval=FALSE, solution=TRUE}
 library(ggplot2)
@@ -418,64 +437,166 @@ map_ggplot <- ggplot() +
 plot(map_ggplot)
 ```
 
-3. Leaflet
+# Exercise 3 : Smooth Density analysis of restaurants in Haute-Garonne
+
+```{block,box.title="Remarque pour Timothée",box.colour="#FF0099"}
+Diverses remarques/ questions à régler concernant cet exercice : 
+
+* J'ai remplacé bks - 1 par bks dans fufun2 mais on pourra en discuter ensemble car je n'ai pas compris leur utilité (idem j'ai enlevé rasdens <- rasdens + 1)
+Les légendes des cartes générées par fufun et fufun2 ne sont pas pareil (légende de fufun2 plus tassée), impossible également de comprendre pourquoi => à discuter
+* J'ai rajouté des st_intersection dans la fonction fufun pour rendre les contours plus nets, surtout pour la fonction fufun qui remplissait sinon sur tout le carré de grid. Je n'arrive pas par contre à faire la même chose pour fufun2 car rasdens est de type raster et non polygon...
+* J'ai un warning généré par fufun2 que j'arrive pas à régler :  attribute variables are assumed to be spatially constant throughout all geometries
+* On pourra améliorer la représentation de la question 1 une fois que tu auras davantage développé la partie sur mapview du cours
+* La légend des cartes (0.5 km) est effacée car trop à droite. Comment corriger cela ? 
+```
+
+1. Using the data contained in "sir_31" used previously, map the more than 4,000 restaurants of department 31 with the {mapview} package. Try using different parameters to customize your map.
 
 
-```{block, box.type = "warning"}
-Les html widgets semblent bugger avec unilur... Issue postée... html modifié à la main pour le moment...
+```{block, box.title=" Information",box.type = "advice"}
+For example, you can use the map.types, col.regions, label, color, legend, layer.name, homebutton, lwd ... parameters of the `mapview` function.
 ```
 
 
-```{r, eval=FALSE, solution=TRUE}
-# Ajout des coordonnées X et Y dans mix_31
-mix_31 <- bind_cols(mix_31,
-          mix_31 %>%  st_centroid() %>% 
-            st_transform('+proj=longlat +ellps=GRS80 +no_defs') %>%
-            st_coordinates() %>% as.data.frame()) 
-
-library(leaflet)
-  carto <- leaflet(mix_31) %>%
-    addTiles('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
-    addCircles(lng = ~X, lat = ~Y, weight = 1,
-               radius = ~sqrt(nb_of_rest)*300,
-               popup = ~paste(nb_of_rest),
-               color = ~colorQuantile(cols, domain=mix_31$nb_rest_10000inhab, probs= c(0,0.45,0.6,0.8,1.0))(nb_rest_10000inhab)) %>% 
-    addLegend("topleft", 
-              colors = cols,
-              labels = paste0("[", round(bks,0)[-5], ";", round(bks,0)[-1],"["),
-              title = "Number of restaurants<br>for 10 000 inhabitants",
-              opacity = 1) 
-  
-  carto
-  
+```{r, nm=TRUE, eval=FALSE, solution=TRUE}
+library(mapview)
+mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
 ```
 
-```{r, echo=FALSE}
-# Ajout des coordonnées X et Y dans mix_31
-mix_31 <- bind_cols(mix_31,
-          mix_31 %>%  st_centroid() %>% 
-            st_transform('+proj=longlat +ellps=GRS80 +no_defs') %>%
-            st_coordinates() %>% as.data.frame()) 
 
-library(leaflet)
-  carto <- leaflet(mix_31) %>%
-    addTiles('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
-    addCircles(lng = ~X, lat = ~Y, weight = 1,
-               radius = ~sqrt(nb_of_rest)*300,
-               popup = ~paste(nb_of_rest),
-               color = ~colorQuantile(cols, domain=mix_31$nb_rest_10000inhab, probs= c(0,0.45,0.6,0.8,1.0))(nb_rest_10000inhab)) %>% 
-    addLegend("topleft", 
-              colors = cols,
-              labels = paste0("[", round(bks,0)[-5], ";", round(bks,0)[-1],"["),
-              title = "Number of restaurants<br>for 10 000 inhabitants",
-              opacity = 1) 
-  
-  carto
+```{r, nm=TRUE, echo=FALSE}
+library(mapview)
+mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
 ```
 
-# Exercice 3 : Cartogramme
+2. Apply the fufun2 function below on the SIRENE data and on the iris of the department 31. Use a 2km cellsize. What observation can you make concerning the readability of the map?
 
-Réaliser un cartogramme du département 31 au niveau intercommunal proportionnellement aux nombres de restaurants (données SIRENE). 
+```{r, box.title=" Information",box.type = "advice"}
+fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12, author="") {
+  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
+  x <- st_intersects(grid, feat) 
+  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
+  gg <- st_intersection(gg,adm) #NEW
+  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
+  bks <- c(0,unique(round(getBreaks(gg$n[gg$n>0], nclass = nclass, method = method),0)))
+  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
+  choroLayer(gg, var = "n", border = NA, add = TRUE, method = method, breaks= bks, col= cols, legend.pos="topright", legend.values.cex=0.7, legend.title.cex=0.7, legend.title.txt = "resto per ha", legend.nodata=FALSE,legend.values.rnd=0)
+  layoutLayer(title = "Count points in a regular grid", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
+}
+```
+
+```{r, nm=TRUE, eval=TRUE, echo=FALSE}
+fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12, author="") {
+  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
+  x <- st_intersects(grid, feat) 
+  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
+  gg <- st_intersection(gg,adm) #NEW
+  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
+  bks <- c(0,unique(round(getBreaks(gg$n[gg$n>0], nclass = nclass, method = method),0)))
+  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
+  choroLayer(gg, var = "n", border = NA, add = TRUE, method = method, breaks= bks, col= cols, legend.pos="topright", legend.values.cex=0.7, legend.title.cex=0.7, legend.title.txt = "resto per ha", legend.nodata=FALSE,legend.values.rnd=0)
+  layoutLayer(title = "Count points in a regular grid", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
+}
+```
+
+```{r, nm=TRUE, solution=TRUE}
+fufun2(sir_31, iris_31, 2000)
+# La carte est peu lisible en raison du choix de discrétisation
+```
+
+3. Try to make a more readable map.
+
+<details>
+<summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
+Test the method = "quantile" parameter and vary the number of classes until you get something nice.
+</details>
+
+```{r, nm=TRUE, eval=FALSE, solution=TRUE}
+fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
+```
+
+```{r, nm=TRUE, echo=FALSE}
+fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
+```
+
+4. In order to make the result even more meaningful, we will now make a smoothed map. You can use the fufun function below. Use a 2km sigma and a 2km resolution and the quantile method (n = 12). 
+
+
+```{r, box.title=" Information",box.type = "advice"}
+library(spatstat)
+library(raster)
+library(maptools)
+fufun <- function(feat, adm, sigma = 100, res = 50, method="equal",nclass=12, author="") {
+  bb <- as(feat, "Spatial")
+  bbowin <- as.owin(as(adm, "Spatial"))
+  pts <- coordinates(bb)
+  p <- ppp(pts[, 1], pts[, 2], window = bbowin)
+  ds <- density.ppp(p, sigma = sigma, eps = res)
+  rasdens <- raster(ds) * 10000 * 10000
+  proj4string(rasdens) <- "+init=epsg:2154"
+  bks <- unique(round(getBreaks(values(rasdens), nclass = nclass, method = method),0)) 
+  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
+  plot(adm$geometry, col = NA, border = NA, main = "", bg = "#FBEDDA")
+  plot(rasdens, breaks = bks, col = cols, add = T, legend = F)
+  legendChoro(pos = "topright", cex = 0.7, title.cex = 0.7, title.txt = "resto per ha", 
+              breaks = bks, nodata = FALSE, values.rnd = 0, col = cols)
+  layoutLayer(title = "Smooth density Analysis", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
+ }
+```
+
+
+```{r, nm=TRUE, eval=TRUE, echo=FALSE}
+library(spatstat)
+library(raster)
+library(maptools)
+fufun <- function(feat, adm, sigma = 100, res = 50, method="equal",nclass=12, author="") {
+  bb <- as(feat, "Spatial")
+  bbowin <- as.owin(as(adm, "Spatial"))
+  pts <- coordinates(bb)
+  p <- ppp(pts[, 1], pts[, 2], window = bbowin)
+  ds <- density.ppp(p, sigma = sigma, eps = res)
+  rasdens <- raster(ds) * 10000 * 10000
+  proj4string(rasdens) <- "+init=epsg:2154"
+  bks <- unique(round(getBreaks(values(rasdens), nclass = nclass, method = method),0)) 
+  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
+  plot(adm$geometry, col = NA, border = NA, main = "", bg = "#FBEDDA")
+  plot(rasdens, breaks = bks, col = cols, add = T, legend = F)
+  legendChoro(pos = "topright", cex = 0.7, title.cex = 0.7, title.txt = "resto per ha", 
+              breaks = bks, nodata = FALSE, values.rnd = 0, col = cols)
+  layoutLayer(title = "Smooth density Analysis", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
+ }
+```
+
+
+```{r, nm=TRUE, solution=TRUE}
+fufun(sir_31, iris_31,  2000, 2000,method="quantile",nclass=12)
+```
+
+5. Try to improve the map resolution.
+
+```{r, nm=TRUE, eval=FALSE, solution=TRUE}
+fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
+```
+
+```{r, nm=TRUE, echo=FALSE}
+fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
+```
+
+6. Would we have obtained the same smoothing for this department if we had kept the restaurants of the bordering departments?
+
+```{r, nm=TRUE, eval=FALSE, solution=TRUE}
+No. The borders would have been different. 
+```
+
+
+# Exercise 4 : Cartogram
+
+Make a cartogram of department 31 at the level of intercommunalities in proportion to the number of restaurants (SIRENE data).
+
+```{block, box.title=" Information",box.type = "advice"}
+Use the map layer "epci_31" from previous exercises and the {cartogram} package. 
+```
+
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
 library(cartogram)
@@ -485,7 +606,7 @@ plot(st_geometry(cartogramme), col="lightblue")
 
 ####{.tabset}
 
-##### Normal boundaries
+##### Normal borders
 ```{r, nm=TRUE, echo=FALSE}
 plot(st_geometry(epci_31), col="lightblue")
 ```
@@ -500,18 +621,18 @@ plot(st_geometry(cartogramme), col="lightblue")
 ####{}
 
 
-# Exercice 4 : Linemap
+# Exercise 5 : Linemap
 
-Réaliser une linemap des communes du département 31 proportionnellement au nombre de restaurants présents dans chaque commune (données SIRENE). 
+Make a linemap of department 31 at the level of municipalities in proportion to the number of restaurants (SIRENE data).
 
 ```{block, box.title=" Information",box.type = "advice"}
-Utilisez la couche cartographique "com_31" des exercices précédents et le package {linemap}. 
+Use the map layer "com_31" from previous exercises and the {linemap} package. 
 ```
 
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-Pensez à utiliser les deux fonctions `getgrid` et `linemap` de ce package. 
-Les paramètres suivants fonctionnent : cellsize = 1750, k = 400 et threshold = 0.01
+Use the two `getgrid` and` linemap` functions of this package.
+The following parameters work: cellsize = 1750, k = 400 and threshold = 0.01.
 </details>
 
 
@@ -531,76 +652,10 @@ plot(sf::st_geometry(st_transform(com_31, crs=st_crs(occitanie))), col="ivory1",
 opar <- par(mar=c(0,0,0,0), bg = "ivory2")
 linemap(x = grid, var = "nb_of_rest", k = 400, threshold = 0.00001,
         col = "ivory1", border = "ivory4", lwd = 0.6, add = TRUE)
+library(dplyr) #because select is also in raster package and bugs if CACHE = TRUE
 ```
 
 
-# Exercice 5 : Carte tricolore
-
-#####  {.bonus}
-
-Réaliser une carte tricolore qui représente les iris de Toulouse en fonction de si elles sont plutôt dotées en restaurants, cafés ou fast foods (données OSM)
-
-##### {}
-
-
-```{block, box.type = "warning"}
-Pour le moment, la fonction Tricolore est buggée suite à la mise à jour de ggplot2...
-Une issue a été postée, à voir si ce problème sera fixé avant Florence. 
-A titre d'exemple, j'ai compilé le code de la fonction avec une ancienne version de ggplot2 et j'ai enregistré le résultat de la fonction Tricolore dans tric.rds
-```
-
-
-```{r, nm=TRUE, solution = TRUE}
-bdd <- readRDS("../data/osm_31.rds") %>% 
-  filter(INSEE_COM=="31555")
-
-bdd_restaurant <- bdd %>% filter(amenity=="restaurant") %>%  
-  group_by(CODE_IRIS) %>% 
-   summarize(restaurant= n()) %>% 
-  st_set_geometry(NULL)
-
-bdd_fast_food <- bdd %>% filter(amenity=="fast_food") %>%  
-  group_by(CODE_IRIS) %>% 
-   summarize(fast_food= n()) %>% 
-  st_set_geometry(NULL)
-
-bdd_cafe <- bdd %>% filter(amenity=="cafe") %>%  
-  group_by(CODE_IRIS) %>% 
-   summarize(cafe= n()) %>% 
-  st_set_geometry(NULL)
-
-couche_carto <- left_join(iris_31 %>%  filter(INSEE_COM=="31555"), 
-                          bdd_restaurant,
-                          by=c("CODE_IRIS"="CODE_IRIS")
-) %>% 
-left_join(bdd_fast_food,by=c("CODE_IRIS"="CODE_IRIS")) %>% 
-left_join(bdd_cafe,by=c("CODE_IRIS"="CODE_IRIS")) %>% 
-  replace(is.na(.),0) %>% 
-  mutate(part_restaurant = restaurant / (restaurant + fast_food + cafe), 
-         part_fast_food = fast_food / (restaurant + fast_food + cafe), 
-         part_cafe = cafe / (restaurant + fast_food + cafe)
-         )
-
-#devtools::install_github("jschoeley/tricolore")
-library(tricolore)
-
-# tric <- Tricolore(couche_carto %>% st_set_geometry(NULL), 'part_restaurant', 'part_fast_food', 'part_cafe', center = NA)
-#saveRDS(object = tric, file = "../data/tric.rds")
-tric <- readRDS("../data/tric.rds") 
-#tric$legend
-
-
-couche_carto <- bind_cols(couche_carto,tric$hexsrgb %>% as_data_frame() %>% replace(is.na(.),"#FFFFFFFF"))
-
-library(ggplot2)
-q <- ggplot(couche_carto) +
-    geom_sf(aes(fill = value)) +
-  scale_fill_identity() 
-
-q
-```
-
-<center><img src="./img/tricolore.png" alt="legende tricolore" style="border:0px" height="50%" width="50%"/></center>
 
 
 --------------------------------------------
