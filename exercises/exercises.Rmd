@@ -54,7 +54,7 @@ knit_hooks$set(sm = function(before, options, envir){
 
 # Exercice 1 : Manipulate sf objects and associated data.frames
 
-1. Load in R the iris[^1] map layer "iris_31.rds" of the french department called Haute-Garonne (numbered 31). Would the `sf :: st_read` function also work? Why ?
+1. Load in R the iris[^1] map layer "iris_31.rds" of the french department called Haute-Garonne (numbered 31). Would the `sf::st_read` function also work? Why ?
 
 [^1]: In French, IRIS is an acronym of ‘aggregated units for statistical information’. Their target sizes are 2000 residents per basic unit.
 
@@ -288,8 +288,6 @@ plot(st_geometry(mix_31), col="lightblue")
 
 10. Using the {cartography} package, simply add to each territory of this map a proportional circle layer related to the number of restaurants.
 
-?propSymbolsLayer
-
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
 The `propSymbolsLayer` function allows you to draw proportional circles.
@@ -308,13 +306,19 @@ plot(st_geometry(mix_31), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBED
 propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
 ```
 
+```{r, nm=TRUE, echo=FALSE, eval=FALSE}
+#Sauvegarde des objets pour les exercices suivants
+#saveRDS(object = epci_31, file = "../data/epci_31.rds")
+#saveRDS(object = com_31, file = "../data/com_31.rds")
+#saveRDS(object = mix_31, file = "../data/mix_31.rds")
+```
 
 # Exercise 2 : Map with cartography and ggplot2 packages
 
 1. Data preparation:
 
 * Load in R "fra.shp": the map layer of the borders of the French metropolitan territory 
-* Using the layer called "mix_31" (see previous exercise), create a variable called "nb_rest_10000inhab" which corresponds to the number of restaurants per 10,000 inhabitants in each territory
+* Load the layer called "mix_31.rds" (see previous exercise for more details) and create a variable called "nb_rest_10000inhab" which corresponds to the number of restaurants per 10,000 inhabitants in each territory
 * Create the vector "bks" which corresponds to the breaks of the quantiles (n = 6) of the variable called "nb_rest_10000inhab" and remove duplicated elements in this vector
 * Create the vector "cols" which corresponds to a orange sequential palette (n = 4)
 * Finally, add to the layer "mix_31" a variable called "typo" which indicates the class of the territory according to the discretization contained in "bks" for the  "nb_rest_10000inhab" variable.
@@ -326,8 +330,12 @@ For the creation of the "typo" variable, you can use the `cut` function and appl
 ```
 
 ```{r, solution=TRUE}
+library(sf)
+library(cartography)
+
 fra <- st_read("../data/fra.shp", quiet = TRUE)
 
+mix_31 <- readRDS("../data/mix_31.rds")
 mix_31 <- mix_31 %>% mutate(nb_rest_10000inhab = 10000 * nb_of_rest / P14_POP) 
 
 bks <- getBreaks(v = mix_31$nb_rest_10000inhab, method = "quantile", nclass = 6)[-c(1:2)]
@@ -437,20 +445,23 @@ map_ggplot <- ggplot() +
 plot(map_ggplot)
 ```
 
+
 # Exercise 3 : Smooth Density analysis of restaurants in Haute-Garonne
 
-```{block,box.title="Remarque pour Timothée",box.colour="#FF0099"}
-Diverses remarques/ questions à régler concernant cet exercice : 
+```{block,box.title="Remarques pour Timothée et Kim",box.colour="#FF0099"}
+Pour Timothée, élements des fonctions fufun et fufun2 à modifier : 
 
-* J'ai remplacé bks - 1 par bks dans fufun2 mais on pourra en discuter ensemble car je n'ai pas compris leur utilité (idem j'ai enlevé rasdens <- rasdens + 1)
-Les légendes des cartes générées par fufun et fufun2 ne sont pas pareil (légende de fufun2 plus tassée), impossible également de comprendre pourquoi => à discuter
-* J'ai rajouté des st_intersection dans la fonction fufun pour rendre les contours plus nets, surtout pour la fonction fufun qui remplissait sinon sur tout le carré de grid. Je n'arrive pas par contre à faire la même chose pour fufun2 car rasdens est de type raster et non polygon...
-* J'ai un warning généré par fufun2 que j'arrive pas à régler :  attribute variables are assumed to be spatially constant throughout all geometries
-* On pourra améliorer la représentation de la question 1 une fois que tu auras davantage développé la partie sur mapview du cours
-* La légend des cartes (0.5 km) est effacée car trop à droite. Comment corriger cela ? 
+* Leurs noms...
+* Remplacer bks - 1 par bks dans fufun2 et enlever  rasdens <- rasdens + 1
+* Créer un paramètre pour la légende pour pouvoir adapter à la carte (500m pour le cours sur Paris et 5km pour la Haute-Garonne pour l'exo)
+* Dans la fonction fufun, ne pas faire de st_intersection mais un st_intersect afin de ne pas avoir tout le rectangle autour de la Haute Garonne mais seulement les carrés de la grille de Haute-Garonne. 
+* Mettre des cex = 1 dans les deux fonctions (fufun et fufun2) pour avoir les mêmes légendes ? Ou, si ça fait pas beau dans la partie cours, rajouter en paramètre des fonctions fufun et fufun2. 
+* Dans fufun2 : changer la méthode pour enlever les 0 du calcul des quantiles.
+
+Puis Kim : adapter cet exo 3 avec ces nouvelles fonctions. 
 ```
 
-1. Using the data contained in "sir_31" used previously, map the more than 4,000 restaurants of department 31 with the {mapview} package. Try using different parameters to customize your map.
+1. Load the dataset "sir_31" used previously and map the more than 4,000 restaurants of department 31 with the {mapview} package. Try using different parameters to customize your map.
 
 
 ```{block, box.title=" Information",box.type = "advice"}
@@ -460,16 +471,24 @@ For example, you can use the map.types, col.regions, label, color, legend, layer
 
 ```{r, nm=TRUE, eval=FALSE, solution=TRUE}
 library(mapview)
+library(sf)
+library(cartography)
+sir_31 <- readRDS("../data/sir_31.rds")
+
 mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
 ```
 
 
 ```{r, nm=TRUE, echo=FALSE}
 library(mapview)
+library(sf)
+library(cartography)
+sir_31 <- readRDS("../data/sir_31.rds")
+
 mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
 ```
 
-2. Apply the fufun2 function below on the SIRENE data and on the iris of the department 31. Use a 2km cellsize. What observation can you make concerning the readability of the map?
+2. Load the layer "iris_31" used previously and apply the fufun2 function below on the SIRENE data and on the iris of the department 31. Use a 2km cellsize. What observation can you make concerning the readability of the map?
 
 ```{r, box.title=" Information",box.type = "advice"}
 fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12, author="") {
@@ -499,7 +518,8 @@ fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12, author="") {
 }
 ```
 
-```{r, nm=TRUE, solution=TRUE}
+```{r, sm=TRUE, solution=TRUE}
+iris_31 <- readRDS("../data/iris_31.rds")
 fufun2(sir_31, iris_31, 2000)
 # La carte est peu lisible en raison du choix de discrétisation
 ```
@@ -515,7 +535,7 @@ Test the method = "quantile" parameter and vary the number of classes until you 
 fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
 ```
 
-```{r, nm=TRUE, echo=FALSE}
+```{r, sm=TRUE, echo=FALSE}
 fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
 ```
 
@@ -568,7 +588,7 @@ fufun <- function(feat, adm, sigma = 100, res = 50, method="equal",nclass=12, au
 ```
 
 
-```{r, nm=TRUE, solution=TRUE}
+```{r, sm=TRUE, solution=TRUE}
 fufun(sir_31, iris_31,  2000, 2000,method="quantile",nclass=12)
 ```
 
@@ -578,13 +598,13 @@ fufun(sir_31, iris_31,  2000, 2000,method="quantile",nclass=12)
 fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
 ```
 
-```{r, nm=TRUE, echo=FALSE}
+```{r, sm=TRUE, echo=FALSE}
 fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
 ```
 
 6. Would we have obtained the same smoothing for this department if we had kept the restaurants of the bordering departments?
 
-```{r, nm=TRUE, eval=FALSE, solution=TRUE}
+```{block, solution = TRUE}
 No. The borders would have been different. 
 ```
 
@@ -594,12 +614,16 @@ No. The borders would have been different.
 Make a cartogram of department 31 at the level of intercommunalities in proportion to the number of restaurants (SIRENE data).
 
 ```{block, box.title=" Information",box.type = "advice"}
-Use the map layer "epci_31" from previous exercises and the {cartogram} package. 
+Load the layer "epci_31.rds" from previous exercises and the {cartogram} package. 
 ```
 
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
+epci_31 <- readRDS("../data/epci_31.rds")
+
 library(cartogram)
+library(sf)
+
 cartogramme <- cartogram_cont(epci_31, "nb_of_rest", itermax = 5, maxSizeError = 1)
 plot(st_geometry(cartogramme), col="lightblue")
 ```
@@ -608,6 +632,9 @@ plot(st_geometry(cartogramme), col="lightblue")
 
 ##### Normal borders
 ```{r, nm=TRUE, echo=FALSE}
+epci_31 <- readRDS("../data/epci_31.rds")
+
+library(sf)
 plot(st_geometry(epci_31), col="lightblue")
 ```
 
@@ -626,7 +653,7 @@ plot(st_geometry(cartogramme), col="lightblue")
 Make a linemap of department 31 at the level of municipalities in proportion to the number of restaurants (SIRENE data).
 
 ```{block, box.title=" Information",box.type = "advice"}
-Use the map layer "com_31" from previous exercises and the {linemap} package. 
+Load the map layer "com_31.rds" from previous exercises and the {linemap} package. 
 ```
 
 <details>
@@ -637,6 +664,8 @@ The following parameters work: cellsize = 1750, k = 400 and threshold = 0.01.
 
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
+com_31 <- readRDS("../data/com_31.rds")
+
 library(linemap)
 grid <- getgrid(x = com_31, cellsize = 1750, var = "nb_of_rest")
 plot(sf::st_geometry(com_31), col="ivory1", border = NA)
@@ -646,6 +675,8 @@ linemap(x = grid, var = "nb_of_rest", k = 400, threshold = 0.01,
 ```
 
 ```{r, nm=TRUE, echo=FALSE}
+com_31 <- readRDS("../data/com_31.rds")
+
 library(linemap)
 grid <- getgrid(x = st_transform(com_31, crs=st_crs(occitanie)), cellsize = 1750, var = "nb_of_rest")
 plot(sf::st_geometry(st_transform(com_31, crs=st_crs(occitanie))), col="ivory1", border = NA)
