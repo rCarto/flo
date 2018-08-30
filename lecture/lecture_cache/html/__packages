@@ -5,6 +5,7 @@ sf
 cartography
 cartogram
 SpatialPosition
+ggplot2
 spatstat.data
 nlme
 rpart
@@ -13,4 +14,3 @@ sp
 raster
 maptools
 mapview
-ggplot2
