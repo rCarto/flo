@@ -52,7 +52,7 @@ knit_hooks$set(sm = function(before, options, envir){
 
 ```
 
-# Exercice 1 : Manipulate sf objects and associated data.frames
+# Exercise 1 : Manipulate sf objects and associated data.frames
 
 1. Load in R the iris[^1] map layer "iris_31.rds" of the french department called Haute-Garonne (numbered 31). Would the `sf::st_read` function also work? Why ?
 
@@ -256,7 +256,7 @@ mix_31 <- do.call(rbind, list(EPCI_less100,COM_more100))
 plot(st_geometry(mix_31), col="lightblue")
 ```
 
-####{.tabset}
+####{.tabset} 
 
 ##### Municipalities
 ```{r, nm=TRUE, echo=FALSE}
@@ -347,7 +347,7 @@ mix_31 <- mix_31 %>% mutate(typo = cut(nb_rest_10000inhab,breaks = bks, dig.lab 
 
 2. With the help of {cartography} package, make the following map which contains in a choropleth layer the variable "nb_rest_10000inhab" and in a proportional circle layer the variable "nb_of_rest". Do the same thing with the ggplot2 package.
 
-####{.tabset}
+####{.tabset} 
 
 ##### cartography
 ```{r, nm=TRUE, echo=FALSE}
@@ -448,19 +448,6 @@ plot(map_ggplot)
 
 # Exercise 3 : Smooth Density analysis of restaurants in Haute-Garonne
 
-```{block,box.title="Remarques pour Timothée et Kim",box.colour="#FF0099"}
-Pour Timothée, élements des fonctions fufun et fufun2 à modifier : 
-
-* Leurs noms...
-* Remplacer bks - 1 par bks dans fufun2 et enlever  rasdens <- rasdens + 1
-* Créer un paramètre pour la légende pour pouvoir adapter à la carte (500m pour le cours sur Paris et 5km pour la Haute-Garonne pour l'exo)
-* Dans la fonction fufun, ne pas faire de st_intersection mais un st_intersect afin de ne pas avoir tout le rectangle autour de la Haute Garonne mais seulement les carrés de la grille de Haute-Garonne. 
-* Mettre des cex = 1 dans les deux fonctions (fufun et fufun2) pour avoir les mêmes légendes ? Ou, si ça fait pas beau dans la partie cours, rajouter en paramètre des fonctions fufun et fufun2. 
-* Dans fufun2 : changer la méthode pour enlever les 0 du calcul des quantiles.
-
-Puis Kim : adapter cet exo 3 avec ces nouvelles fonctions. 
-```
-
 1. Load the dataset "sir_31" used previously and map the more than 4,000 restaurants of department 31 with the {mapview} package. Try using different parameters to customize your map.
 
 
@@ -468,141 +455,224 @@ Puis Kim : adapter cet exo 3 avec ces nouvelles fonctions.
 For example, you can use the map.types, col.regions, label, color, legend, layer.name, homebutton, lwd ... parameters of the `mapview` function.
 ```
 
-
-```{r, nm=TRUE, eval=FALSE, solution=TRUE}
-library(mapview)
-library(sf)
-library(cartography)
-sir_31 <- readRDS("../data/sir_31.rds")
-
-mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
-```
-
-
-```{r, nm=TRUE, echo=FALSE}
-library(mapview)
-library(sf)
-library(cartography)
-sir_31 <- readRDS("../data/sir_31.rds")
-
-mapview(sir_31, map.types = "OpenStreetMap", col.regions = "#940000", label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE", homebutton = FALSE, lwd = 0.5) 
-```
-
-2. Load the layer "iris_31" used previously and apply the fufun2 function below on the SIRENE data and on the iris of the department 31. Use a 2km cellsize. What observation can you make concerning the readability of the map?
-
-```{r, box.title=" Information",box.type = "advice"}
-fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12, author="") {
-  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
-  x <- st_intersects(grid, feat) 
-  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
-  gg <- st_intersection(gg,adm) #NEW
-  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
-  bks <- c(0,unique(round(getBreaks(gg$n[gg$n>0], nclass = nclass, method = method),0)))
-  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
-  choroLayer(gg, var = "n", border = NA, add = TRUE, method = method, breaks= bks, col= cols, legend.pos="topright", legend.values.cex=0.7, legend.title.cex=0.7, legend.title.txt = "resto per ha", legend.nodata=FALSE,legend.values.rnd=0)
-  layoutLayer(title = "Count points in a regular grid", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
-}
-```
-
 ```{r, nm=TRUE, eval=TRUE, echo=FALSE}
-fufun2 <- function(feat, adm, cs = 500, method="equal",nclass=12, author="") {
-  grid <- st_make_grid(x = adm, cellsize = cs, what = "polygons")
-  x <- st_intersects(grid, feat) 
-  gg <- st_sf(n = sapply(X = x, FUN = length), grid)
-  gg <- st_intersection(gg,adm) #NEW
-  plot(adm$geometry, col = NA, border = NA, main="", bg = "#FBEDDA")
-  bks <- c(0,unique(round(getBreaks(gg$n[gg$n>0], nclass = nclass, method = method),0)))
-  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
-  choroLayer(gg, var = "n", border = NA, add = TRUE, method = method, breaks= bks, col= cols, legend.pos="topright", legend.values.cex=0.7, legend.title.cex=0.7, legend.title.txt = "resto per ha", legend.nodata=FALSE,legend.values.rnd=0)
-  layoutLayer(title = "Count points in a regular grid", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
+library(mapview)
+library(sf)
+library(cartography)
+
+sir_31 <- readRDS("../data/sir_31.rds")
+mapview(sir_31, map.types = "OpenStreetMap", 
+        col.regions = "#940000", 
+        label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), 
+        color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE",
+        homebutton = FALSE, lwd = 0.5) 
+```
+
+```{r, nm=TRUE, eval=FALSE, echo=TRUE, solution=TRUE}
+library(mapview)
+library(sf)
+library(cartography)
+
+sir_31 <- readRDS("../data/sir_31.rds")
+mapview(sir_31, map.types = "OpenStreetMap", 
+        col.regions = "#940000", 
+        label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), 
+        color = "white", legend = TRUE, layer.name = "Restaurants in SIRENE",
+        homebutton = FALSE, lwd = 0.5) 
+```
+
+2. Load the layer "iris_31" used previously. Apply the "pt_in_grid" function below on the SIRENE data and on the iris of the department 31 to create a grid called "grid" and count points in it. Use a 2km cellsize. 
+
+```{r, box.title=" Information", eval=TRUE, echo=TRUE, box.type = "advice"}
+pt_in_grid <- function(feat, adm, cellsize = 50){
+  grid <- st_make_grid(x = adm, cellsize = cellsize, what = "polygons")
+  . <- st_intersects(grid, adm)
+  grid <- grid[sapply(X = ., FUN = length)>0]
+  . <- st_intersects(grid, feat)
+  grid <- st_sf(n = sapply(X = ., FUN = length), grid)
+  return(grid)
 }
 ```
 
 ```{r, sm=TRUE, solution=TRUE}
+# import
 iris_31 <- readRDS("../data/iris_31.rds")
-fufun2(sir_31, iris_31, 2000)
-# La carte est peu lisible en raison du choix de discrétisation
+# create the grid
+grid <- pt_in_grid(sir_31, iris_31, 2000)
 ```
 
-3. Try to make a more readable map.
+3. Simply use the "plot" instruction to plot the grid. Then, using the choroLayer function of the cartography package, plot the number of restaurants per kilometer in each box of the grid. What observation can you make concerning the readability of the map?
+
+```{r, sm=TRUE, echo=TRUE, eval=TRUE, solution=TRUE}
+# n of rest / km2
+grid$n <- grid$n*1000*1000/as.numeric(st_area(grid))
+
+# custom plot with equal length classes
+bks <- getBreaks(grid$n[grid$n>0], method = "equal", nclass = 9)
+cols <- carto.pal("wine.pal", length(bks)-1)
+# or
+# cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+opar <- par(mar = c(0,0,1.2,0), bg = "#FBEDDA")
+plot(st_geometry(iris_31), col = "ivory3", border = "NA", lwd = 0.5)
+choroLayer(grid, var = "n", border = NA,
+           breaks = bks, col = cols, legend.values.rnd = 2,
+           legend.pos = "topleft", legend.title.txt = "Restaurants / km2",
+           add=T)
+layoutLayer(title = "Restaurant Distribution in Haute-Garonne", scale = 5, 
+            frame = FALSE, tabtitle = TRUE, north = TRUE,
+            author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
+
+```
+
+```{block, sm=TRUE, solution=TRUE}
+The map is not very readable because of the choice of the discretization
+```
+
+4. Plot the distribution of the number of restaurants per box in the grid. What do you notice and what solution can you suggest ? 
+
+```{r, sm=TRUE, eval=TRUE, echo=TRUE, solution=TRUE}
+par(opar)
+hist(grid$n[grid$n>0], 150)
+```
+
+```{block, sm=TRUE, eval=TRUE, echo=TRUE, solution=TRUE}
+The distribution is highly dissymetric. We could use instead a geometric progression classification
+```
+
+5. Try to make a more readable map.
 
 <details>
 <summary style="color:orange;font-family:courier;font-size:150%"><b>CLUES</b></summary>
-Test the method = "quantile" parameter and vary the number of classes until you get something nice.
+Test the method = "geom" and nclass = 9 parameters of the cartography::getBreaks function
 </details>
 
-```{r, nm=TRUE, eval=FALSE, solution=TRUE}
-fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
+
+```{r, sm=TRUE, echo=FALSE, eval=TRUE}
+bks <- getBreaks(grid$n[grid$n>0], method = "geom", nclass = 9)
+cols <- carto.pal("wine.pal", length(bks)-1)
+# or 
+# cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+par(mar = c(0,0,1.2,0), bg = "#FBEDDA")
+plot(st_geometry(iris_31), col = "ivory3", border = "NA", lwd = 0.5)
+choroLayer(grid, var = "n", border = NA,
+           breaks = bks, col = cols,
+           legend.pos = "topleft", legend.values.rnd = 2,
+           legend.title.txt = "Restaurants / km2",
+           add=T)
+layoutLayer(title = "Restaurant Distribution in Haute-Garonne", scale = 5, 
+            frame = FALSE, tabtitle = TRUE, north = TRUE,
+            author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
-```{r, sm=TRUE, echo=FALSE}
-fufun2(sir_31, iris_31, 2000,method="quantile",nclass=20)
+```{r, sm=TRUE, eval=FALSE, echo=TRUE, solution=TRUE}
+bks <- getBreaks(grid$n[grid$n>0], method = "geom", nclass = 9)
+cols <- carto.pal("wine.pal", length(bks)-1)
+# or 
+# cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+par(mar = c(0,0,1.2,0), bg = "#FBEDDA")
+plot(st_geometry(iris_31), col = "ivory3", border = "NA", lwd = 0.5)
+choroLayer(grid, var = "n", border = NA,
+           breaks = bks, col = cols,
+           legend.pos = "topleft", legend.values.rnd = 2,
+           legend.title.txt = "Restaurants / km2",
+           add=T)
+layoutLayer(title = "Restaurant Distribution in Haute-Garonne", scale = 5, 
+            frame = FALSE, tabtitle = TRUE, north = TRUE,
+            author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
-4. In order to make the result even more meaningful, we will now make a smoothed map. You can use the fufun function below. Use a 2km sigma and a 2km resolution and the quantile method (n = 12). 
+
+
+6. In order to make the result even more meaningful, we will now make a smoothed map. You can use the compute_kde function below. Use a 2km sigma and a 2km resolution and the quantile method (n = 12). 
 
 
 ```{r, box.title=" Information",box.type = "advice"}
 library(spatstat)
-library(raster)
 library(maptools)
-fufun <- function(feat, adm, sigma = 100, res = 50, method="equal",nclass=12, author="") {
-  bb <- as(feat, "Spatial")
-  bbowin <- as.owin(as(adm, "Spatial"))
-  pts <- coordinates(bb)
-  p <- ppp(pts[, 1], pts[, 2], window = bbowin)
-  ds <- density.ppp(p, sigma = sigma, eps = res)
-  rasdens <- raster(ds) * 10000 * 10000
-  proj4string(rasdens) <- "+init=epsg:2154"
-  bks <- unique(round(getBreaks(values(rasdens), nclass = nclass, method = method),0)) 
-  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
-  plot(adm$geometry, col = NA, border = NA, main = "", bg = "#FBEDDA")
-  plot(rasdens, breaks = bks, col = cols, add = T, legend = F)
-  legendChoro(pos = "topright", cex = 0.7, title.cex = 0.7, title.txt = "resto per ha", 
-              breaks = bks, nodata = FALSE, values.rnd = 0, col = cols)
-  layoutLayer(title = "Smooth density Analysis", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
- }
+library(raster)
+compute_kde <- function(feat, adm, title, sigma = 100, res = 50){
+  w <- as.owin(as(adm, "Spatial"))
+  pts <- st_coordinates(feat)
+  p <- ppp(pts[,1], pts[,2], window=w)
+  dens <- density.ppp(p, sigma = sigma, eps = res)
+  result <- raster(dens, crs = st_crs(adm)[[2]]) * 1000000
+  return(result)
+}
 ```
 
 
 ```{r, nm=TRUE, eval=TRUE, echo=FALSE}
 library(spatstat)
-library(raster)
 library(maptools)
-fufun <- function(feat, adm, sigma = 100, res = 50, method="equal",nclass=12, author="") {
-  bb <- as(feat, "Spatial")
-  bbowin <- as.owin(as(adm, "Spatial"))
-  pts <- coordinates(bb)
-  p <- ppp(pts[, 1], pts[, 2], window = bbowin)
-  ds <- density.ppp(p, sigma = sigma, eps = res)
-  rasdens <- raster(ds) * 10000 * 10000
-  proj4string(rasdens) <- "+init=epsg:2154"
-  bks <- unique(round(getBreaks(values(rasdens), nclass = nclass, method = method),0)) 
-  cols <- (mapview::mapviewGetOption("raster.palette"))(length(bks) - 1)
-  plot(adm$geometry, col = NA, border = NA, main = "", bg = "#FBEDDA")
-  plot(rasdens, breaks = bks, col = cols, add = T, legend = F)
-  legendChoro(pos = "topright", cex = 0.7, title.cex = 0.7, title.txt = "resto per ha", 
-              breaks = bks, nodata = FALSE, values.rnd = 0, col = cols)
-  layoutLayer(title = "Smooth density Analysis", scale = 0.5, tabtitle = TRUE, frame = FALSE, sources = "Insee, SIRENE 2018", author = author)
- }
+library(raster)
+compute_kde <- function(feat, adm, title, sigma = 100, res = 50){
+  w <- as.owin(as(adm, "Spatial"))
+  pts <- st_coordinates(feat)
+  p <- ppp(pts[,1], pts[,2], window=w)
+  dens <- density.ppp(p, sigma = sigma, eps = res)
+  result <- raster(dens, crs = st_crs(adm)[[2]]) * 1000000
+  return(result)
+}
 ```
 
 
 ```{r, sm=TRUE, solution=TRUE}
-fufun(sir_31, iris_31,  2000, 2000,method="quantile",nclass=12)
+x <- compute_kde(feat = sir_31, adm = iris_31, sigma = 2000, res = 2000)
+bks <- getBreaks(values(x), nclass = 12, method = "quantile")
+cols <- carto.pal("wine.pal", length(bks)-1)
+# or 
+# cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+par(mar = c(0,0,1.2,0), bg = "#FBEDDA")
+plot(st_geometry(iris_31), col = NA, border = NA, main="", bg = "#FBEDDA")
+plot(x, breaks = bks, col=cols, add = T,legend=F)
+legendChoro(pos = "topleft",
+            title.txt = "Restaurants / km2)",values.cex = 0.5,
+            breaks = bks, nodata = FALSE,values.rnd = 2,
+            col = cols)
+layoutLayer(title = "Smoothed Density of Restaurants in HG", scale = 5,
+            tabtitle = TRUE, frame = FALSE,
+            author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
-5. Try to improve the map resolution.
+7. Try to improve the map resolution.
 
 ```{r, nm=TRUE, eval=FALSE, solution=TRUE}
-fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
+x <- compute_kde(feat = sir_31, adm = iris_31, sigma = 2000, res = 500)
+bks <- getBreaks(values(x), nclass = 12, method = "quantile")
+cols <- carto.pal("wine.pal", length(bks)-1)
+# or 
+# cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+par(mar = c(0,0,1.2,0), bg = "#FBEDDA")
+plot(st_geometry(iris_31), col = NA, border = NA, main="", bg = "#FBEDDA")
+plot(x, breaks = bks, col=cols, add = T,legend=F)
+legendChoro(pos = "topleft",
+            title.txt = "Restaurant Density\n(rest./km2)",values.cex = 0.5,
+            breaks = bks, nodata = FALSE,values.rnd = 2,
+            col = cols)
+layoutLayer(title = "Smoothed Density of Restaurants in HG", scale = 5,
+            tabtitle = TRUE, frame = FALSE,
+            author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
 ```{r, sm=TRUE, echo=FALSE}
-fufun(sir_31, iris_31,  2000, 500,method="quantile",nclass=12)
+x <- compute_kde(feat = sir_31, adm = iris_31, sigma = 2000, res = 500)
+bks <- getBreaks(values(x), nclass = 12, method = "quantile")
+cols <- carto.pal("wine.pal", length(bks)-1)
+# or 
+# cols <- mapview::mapviewGetOption("raster.palette")(length(bks)-1)
+par(mar = c(0,0,1.2,0), bg = "#FBEDDA")
+plot(st_geometry(iris_31), col = NA, border = NA, main="", bg = "#FBEDDA")
+plot(x, breaks = bks, col=cols, add = T,legend=F)
+legendChoro(pos = "topleft",
+            title.txt = "Restaurant Density\n(rest./km2)",values.cex = 0.5,
+            breaks = bks, nodata = FALSE,values.rnd = 2,
+            col = cols)
+layoutLayer(title = "Smoothed Density of Restaurants in HG", scale = 5,
+            tabtitle = TRUE, frame = FALSE,
+            author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
-6. Would we have obtained the same smoothing for this department if we had kept the restaurants of the bordering departments?
+8. Would we have obtained the same smoothing for this department if we had kept the restaurants of the bordering departments?
 
 ```{block, solution = TRUE}
 No. The borders would have been different. 
