@@ -3,15 +3,14 @@ title: "LET'S PRACTICE Geovisualization and Spatial Analysis "
 author: "Kim Antunez & Timothée Giraud"
 date: "Massive spatial data: challenges in acquisition, treatment and use for territories"
 output:
-  #unilur::tutorial_html_solution:
-  html_document:
+  unilur::tutorial_html_solution:
+  #html_document:
     toc: true
     toc_float: false
     toc_depth: 1
-    solution_suffix: ""
+    suffix: ""
     theme: journal
     highlight: kate
-    selfcontained: false
     number_sections: no
     number_subsections: no
 ---
