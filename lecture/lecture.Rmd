@@ -6,7 +6,7 @@ output:
     thumbnails: false
     lightbox: false
     gallery: false
-    selfcontained: false
+    selfcontained: true
 ---
 
 
@@ -47,7 +47,7 @@ knit_hooks$set(sm = function(before, options, envir){
 
 # The R Spatial Ecosystem {.tabset}
 
-A few main packages are dedicated to spatial data handling like import/export, display, geoprocessing, spatial ststistics. 
+A few main packages are dedicated to spatial data handling like import/export, display, geoprocessing, spatial stastistics. 
 
 ## "Historical" Packages
 
