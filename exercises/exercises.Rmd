@@ -1,5 +1,5 @@
 ---
-title: "LET'S PRACTICE Geovisualization and Spatial Analysis "
+title: "Let's Practice Geovisualization and Spatial Analysis "
 author: "Kim Antunez & Timothée Giraud"
 date: "Massive spatial data: challenges in acquisition, treatment and use for territories"
 output:
@@ -82,8 +82,10 @@ OSM has many benefits, ensuring transparent data provenance and ownership, enabl
 
 # Exercise 1 : Manipulate sf objects and associated data.frames
 
-
+```{block, box.title = "1", box.body = list(fill = "white"), box.icon = "fa-star"}
 1. Load in R the iris[^1] map layer ‘iris_31.rds’ of the french department called Haute-Garonne (numbered 31). Would the `sf::st_read` function also work? Why?
+```
+
 
 [^1]: In French, IRIS is an acronym of ‘aggregated units for statistical information’. Their target sizes are 2000 residents per basic unit.
 
@@ -98,12 +100,14 @@ iris_31 <- readRDS("../data/iris_31.rds")
 ```
 
 ```{block, solution = TRUE}
-It would not work because ‘iris_31’ is not a shapefile but a file already R formatted. Simply load it with the `readRDS` function.
+`st_read` would not work because ‘iris_31.rds’ is not a shapefile but a file already R formatted. Simply load it with the `readRDS` function.
 ```
 
-2. Display the basemap of department 31 with `plot(iris_31)`.
-What do you notice ?
 
+```{block, box.title = "2", box.body = list(fill = "white"), box.icon = "fa-star"}
+Display the basemap of department 31 with `plot(iris_31)`.
+What do you notice ?
+```
 
 ```{r, nm=TRUE, solution = TRUE}
 plot(iris_31)
@@ -113,7 +117,9 @@ plot(iris_31)
 We notice that R performs 3 graphs: one graph per variable in the sf object.
 ```
 
-3. What is the functionality of the `sf::st_geometry` function? What solution do you propose then?
+```{block, box.title = "3", box.body = list(fill = "white"), box.icon = "fa-star"}
+What is the functionality of the `sf::st_geometry` function? What solution do you propose then?
+```
 
 ```{block, solution = TRUE}
 `sf::st_geometry` makes it possible to isolate the information contained in the ‘geometry’ column of the sf object. Using it, we put aside other variables (here *CODE_IRIS*, *P14_POP* and *INSEE_COM*).
@@ -124,10 +130,13 @@ We notice that R performs 3 graphs: one graph per variable in the sf object.
 plot(st_geometry(iris_31))
 ```
 
-4. In which projection is the map layer? Map it with another projection.
+
+```{block, box.title = "4", box.body = list(fill = "white"), box.icon = "fa-star"}
+In which projection is the map layer? Map it with another projection.
+```
 
 ```{block, opts.label = "information"}
-Test the Azimuthal Equidistant projection with `crs="+proj=aeqd +lat_0=90 +lon_0=0` to see a clear difference and create a layer called ‘iris_31_aeqd’.
+Test the Azimuthal Equidistant projection with "`crs="+proj=aeqd +lat_0=90 +lon_0=0`" to see a clear difference and create a layer called ‘iris_31_aeqd’.
 ```
 
 ```{block, opts.label = "clues"}
@@ -150,7 +159,9 @@ iris_31_aeqd <- st_transform(iris_31, crs="+proj=aeqd +lat_0=90 +lon_0=0")
 plot(st_geometry(iris_31_aeqd))
 ```
 
-5. Calculate the distance matrix between the 5 first iris of department 31. Do you get the same distance matrix if you are working on a layer projected in another projection?
+```{block, box.title = "5", box.body = list(fill = "white"), box.icon = "fa-star"}
+Calculate the distance matrix between the 5 first iris of department 31. Do you get the same distance matrix if you are working on a layer projected in another projection?
+```
 
 ```{block, opts.label = "information"}
 Use map layers called ‘iris_31’ and ‘iris_31_aeqd’.
@@ -171,7 +182,9 @@ identical(mat,mat_aeqd)
 No, the two matrices are different.
 ```
 
-6. Using the layer called ‘iris_31’, create a new aggregated map layer called ‘com_31’ which corresponds to the municipalities of department 31. Also keep in this new layer the information on the population in each municipality.
+```{block, box.title = "6", box.body = list(fill = "white"), box.icon = "fa-star"}
+Using the layer called ‘iris_31’, create a new aggregated map layer called ‘com_31’ which corresponds to the municipalities of department 31. Also keep in this new layer the information on the population in each municipality.
+```
 
 ```{block, opts.label = "information"}
 The map layer called ‘iris_31’ contains the 5 digit codes of municipalities in its variable *INSEE_COM* and the 2014 population in its column *P14_POP*.
@@ -205,7 +218,9 @@ com_31 <- iris_31 %>%
 plot(st_geometry(com_31))
 ```
 
-7.  Using the data contained in ‘sir_31’, add to this layer the number of restaurants per municipality. 
+```{block, box.title = "7", box.body = list(fill = "white"), box.icon = "fa-star"}
+Using the data contained in ‘sir_31’, add to this layer the number of restaurants per municipality. 
+```
 
 ```{block, opts.label = "information"}
 The code of each municipality is not in the ‘sir_31’ database. To create it, you have to create a variable called *INSEE_COM* (5 digits) which concatenates the *DEPET* (2 digits) and *COMET* (3 digits) variables.
@@ -216,16 +231,18 @@ sir_31 <- readRDS("../data/sir_31.rds")
 
 com_31 <- left_join(com_31,
                     sir_31 %>%
-  mutate(INSEE_COM=paste0(DEPET,COMET)) %>% 
-  group_by(INSEE_COM) %>% 
-   summarize(nb_of_rest= n()) %>% 
-  st_set_geometry(NULL),
-                    by=c("INSEE_COM"="INSEE_COM")
-) %>% 
+                      mutate(INSEE_COM=paste0(DEPET,COMET)) %>% 
+                      group_by(INSEE_COM) %>% 
+                      summarize(nb_of_rest= n()) %>% 
+                      st_set_geometry(NULL),
+                    by=c("INSEE_COM"="INSEE_COM")) %>% 
   mutate(nb_of_rest=ifelse(is.na(nb_of_rest),0,nb_of_rest))
 ```
 
-8. Aggregate all the information present in ‘com_31’ at the level of french intercommunalites (called EPCI) and call this new layer ‘epci_31’. 
+```{block, box.title = "8", box.body = list(fill = "white"), box.icon = "fa-star"}
+Aggregate all the information present in ‘com_31’ at the level of french intercommunalites (called EPCI) and call this new layer ‘epci_31’. 
+```
+
 
 ```{block, opts.label = "information"}
 You have to use the database ‘table_MAUP.rds’ to have a match between the municipality code (*CODGEO*) and intercommunality code (*EPCI*).
@@ -260,71 +277,10 @@ plot(st_geometry(epci_31))
 ```
 
 
-```{block, opts.label = "information"}
-We can notice that the number of restaurants is very low or even equals to zero in most municipalities. We will therefore want to create a new map layer that partially uses the zoning of the municipalities and partially the EPCI zoning.
+
+```{block, box.title = "9", box.body = list(fill = "white"), box.icon = "fa-star"}
+Using the `cartography` package, simply plot a map of french intercommunality with a  proportional circle layer related to the number of restaurants.
 ```
-
-9. We want to map the number of restaurants at the level of municipalities if its EPCI (intercommunality) contains more than 100 restaurants and at the level of intercommunalities if the intercommunality contains less than 100 restaurants. Create a map layer that meets this need.
-
-```{block, opts.label = "information"}
-Start by creating the layers ‘EPCI_less100’ and ‘COM_more100’ corresponding respectively to the EPCIs which contain less than 100 restaurants and to the municipalities which belong to an EPCI containing more than 100 restaurants.
-```
-
-```{block, opts.label = "clue"}
-Use the `do.call(rbind, list(EPCI_less100,COM_more100))` statement to merge these two layers.
-```
-
-```{r, nm=TRUE, eval=FALSE, solution = TRUE}
-EPCI_less100 <- epci_31 %>% filter(nb_of_rest < 100) %>% 
-  setNames(c("territory","P14_POP","nb_of_rest","geometry"))
-
-COM_more100 <- left_join(com_31,table_MAUP,by=c("INSEE_COM"="CODGEO")) %>% 
-  filter(!EPCI%in%EPCI_less100$territory) %>% 
-  select(-EPCI) %>% 
-  setNames(c("territory","P14_POP","nb_of_rest","geometry"))
-
-par(mar = c(0,0,0,0), mfrow = c(1,2))
-plot(st_geometry(epci_31))
-plot(st_geometry(EPCI_less100), col="lightblue",add=TRUE)
-plot(st_geometry(epci_31))
-plot(st_geometry(COM_more100), col="lightblue",add=TRUE)
-
-mix_31 <- do.call(rbind, list(EPCI_less100,COM_more100))
-
-plot(st_geometry(mix_31), col="lightblue")
-```
-
-#### {.tabset} 
-
-##### Municipalities
-```{r, nm=TRUE, echo=FALSE}
-EPCI_less100 <- epci_31 %>% filter(nb_of_rest < 100) %>% 
-  setNames(c("territory","P14_POP","nb_of_rest","geometry"))
-
-COM_more100 <- left_join(com_31,table_MAUP,by=c("INSEE_COM"="CODGEO")) %>% 
-  filter(!EPCI%in%EPCI_less100$territory) %>% 
-  select(-EPCI) %>% 
-  setNames(c("territory","P14_POP","nb_of_rest","geometry"))
-
-plot(st_geometry(epci_31))
-plot(st_geometry(EPCI_less100), col="lightblue",add=TRUE)
-```
-
-##### Intercommunalities
-```{r, nm=TRUE, echo=FALSE}
-plot(st_geometry(epci_31))
-plot(st_geometry(COM_more100), col="lightblue",add=TRUE)
-```
-
-##### Both
-```{r, nm=TRUE, echo=FALSE}
-mix_31 <- do.call(rbind, list(EPCI_less100,COM_more100))
-plot(st_geometry(mix_31), col="lightblue")
-```
-
-#### {}
-
-10. Using the `cartography` package, simply add to each territory of this map a proportional circle layer related to the number of restaurants.
 
 ```{block, opts.label = "clues"}
 The `propSymbolsLayer` function allows you to draw proportional circles.
@@ -332,14 +288,14 @@ The `propSymbolsLayer` function allows you to draw proportional circles.
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
 library(cartography)
-plot(st_geometry(mix_31), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
-propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
+plot(st_geometry(epci_31), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+propSymbolsLayer(epci_31, var = "nb_of_rest", inches = 0.2)
 ```
 
 ```{r, nm=TRUE, echo=FALSE}
 library(cartography)
-plot(st_geometry(mix_31), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
-propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
+plot(st_geometry(epci_31), col = "ivory1", border = "ivory3",lwd =0.5,bg = "#FBEDDA")
+propSymbolsLayer(epci_31, var = "nb_of_rest", inches = 0.2)
 ```
 
 ```{r, nm=TRUE, echo=FALSE, eval=FALSE}
@@ -351,15 +307,20 @@ propSymbolsLayer(mix_31, var = "nb_of_rest", inches = 0.2)
 
 # Exercise 2 : Maps with cartography and ggplot2 packages
 
+We would like here to design EPCI maps that combine the number of restaurants and the number of restaurants per 10000 inhabitants. 
 
-1. Data preparation:
 
-* Load ‘fra.shp’ in R: the map layer of the borders of the French metropolitan territory 
-* Load the layer called ‘mix_31.rds’ (see previous exercise for more details) and create a variable called *nb_rest_10000inhab* which corresponds to the number of restaurants per 10,000 inhabitants in each territory
-* Create a 5 element vector called ‘bks’ whose first element is 0. The 4 others correspond to the breaks of the quantiles (n = 3) of the variable called *nb_rest_10000inhab* excluding lines if nb_rest_10000inhab equals to zero.
-* Create the vector *cols* which corresponds to a orange sequential palette (n = 4)
-* Finally, add to the layer ‘mix_31’ a variable called *typo* which indicates the class of the territory according to the discretization contained in *bks* for the  *nb_rest_10000inhab* variable.
 
+```{block, box.title = "1", box.body = list(fill = "white"), box.icon = "fa-star"}
+Data preparation:
+
+* Load ‘fra.shp’ in R: the map layer of the borders of the French metropolitan territory. 
+* Load the layer called ‘epci_31.rds’ (see previous exercise for more details) and 
+create a variable called *nb_rest_10000inhab* which corresponds to the number of restaurants per 10,000 inhabitants in each territory.
+* Create a vector of quantiles breaks of the *nb_rest_10000inhab* variable.
+* Create the vector colors which corresponds to a the number of classes defined earlier.
+* Finally, add  a variable called *typo* to 'epci_31' which indicates the class of the territory according to the discretization contained in *bks* for the  *nb_rest_10000inhab* variable (this is needed for ggplot2 maps.
+```
 
 ```{block, opts.label = "information"}
 For the creation of ‘bks’ et ‘cols’, use the `getBreaks` et `carto.pal` functions of the  `cartography` package.
@@ -370,41 +331,53 @@ For the creation of the *typo* variable, you can use the `cut` function and appl
 library(sf)
 library(cartography)
 library(dplyr)
-
+# Import data
 fra <- st_read("../data/fra.shp", quiet = TRUE)
-
-mix_31 <- readRDS("../data/mix_31.rds")
-mix_31 <- mix_31 %>% mutate(nb_rest_10000inhab = 10000 * nb_of_rest / P14_POP) 
-
-bks <- c(0,
-         getBreaks(v = mix_31$nb_rest_10000inhab[mix_31$nb_rest_10000inhab>0],
-                   method = "quantile",
-                   nclass = 3))
-
-cols <- carto.pal("orange.pal", 4)
-
-mix_31 <- mix_31 %>%
-  mutate(typo = cut(nb_rest_10000inhab,breaks = bks, dig.lab = 2, include.lowest = TRUE))
+epci_31 <- readRDS("../data/epci_31.rds")
+# Create the variable
+epci_31$nb_rest_10000inhab <- 10000 * epci_31$nb_of_rest / epci_31$P14_POP
+# Define breaks
+bks <- getBreaks(v = epci_31$nb_rest_10000inhab, method = "quantile", nclass = 4)
+# Define color palette
+cols <- carto.pal("orange.pal", length(bks)-1)
+# Create a "typo"" variable
+epci_31 <- epci_31 %>%
+  mutate(typo = cut(nb_rest_10000inhab,breaks = bks, dig.lab = 2, 
+                    include.lowest = TRUE))
 ```
 
-2. With the help of `cartography` package, make the following map which contains in a choropleth layer the variable *nb_rest_10000inhab* and in a proportional circle layer the variable *nb_of_rest*. Do the same thing with the `ggplot2` package.
+
+```{block, box.title = "2", box.body = list(fill = "white"), box.icon = "fa-star"}
+With the help of `cartography` package, make the following map which contains in a choropleth layer the variable *nb_rest_10000inhab* and in a proportional circle layer the variable *nb_of_rest*. Do the same thing with the `ggplot2` package.
+```
+
 
 With cartography:
 
 ```{r, eval=FALSE, solution=TRUE}
+# Define plot margins
 par(mar = c(0.2, 0.2, 1.4, 0.2), bg = "azure")
-plot(st_geometry(mix_31), border="azure")
-plot(st_geometry(fra), col="ivory", border = "ivory3", xlim = bb[c(1, 3)], 
-     ylim = bb[c(2, 4)],add=TRUE)
-
-choroLayer(mix_31, var = "nb_rest_10000inhab", breaks = bks, col = cols, border = "grey80", lwd = 0.4, 
-           legend.pos = "topleft",
-           legend.title.txt = "Number of restaurants\nfor 10000 inhabitants", 
-           add = TRUE)
-propSymbolsLayer(mix_31, var="nb_of_rest", col=viridis::viridis(1,alpha=0.8),border=NA, legend.pos="left", legend.title.txt = "Number of restaurants", add = TRUE)
-layoutLayer(title = "Restaurants", sources = "Insee, 2018", author = "Kim & Tim, 2018", 
-            theme = "green.pal", col = "darkred", coltitle = "white", postitle = "center",
+# Find EPCI bounding box
+bb <- st_bbox(epci_31)
+# Plot France using EPCI boundingbox
+plot(st_geometry(fra), col="ivory", border = "ivory3", 
+     xlim = bb[c(1, 3)], ylim = bb[c(2, 4)])
+# Plot the choropleth layer
+choroLayer(epci_31, var = "nb_rest_10000inhab", 
+           breaks = bks, col = cols, border = "grey80", lwd = 0.5, 
+           legend.pos = "topleft",add = TRUE,
+           legend.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+# Plot proportionnal symbols
+propSymbolsLayer(epci_31, var="nb_of_rest", col="#440170",border=NA, 
+                 legend.pos="left", inches=0.4, add = TRUE,
+                 legend.title.txt = "Number of restaurants")
+# Add a layout layer
+layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
+            author = "Kim & Tim, 2018", 
+            theme = "green.pal", col = "darkred", 
+            coltitle = "white", postitle = "center",
             frame = TRUE, scale = 10)
+# Add a north (south) arrow
 north(pos = "topright", south = TRUE)
 ```
 
@@ -416,17 +389,17 @@ library(ggplot2)
 map_ggplot <- ggplot() +
   geom_sf(data = fra, colour = "ivory3",
           fill = "ivory") +
-  geom_sf(data = mix_31, aes(fill = typo), colour = "grey80") +
+  geom_sf(data = epci_31, aes(fill = typo), colour = "grey80") +
   scale_fill_manual(name = "Number of restaurants\nfor 10000 inhabitants",
                     values = cols, na.value = "#303030")+
-   geom_sf(data = mix_31 %>%  st_centroid(),
-           aes(size= nb_of_rest), color = viridis::viridis(1,alpha=0.8), show.legend = 'point')+
+   geom_sf(data = epci_31 %>%  st_centroid(),
+           aes(size= nb_of_rest), color = "#440154CC", show.legend = 'point')+
   scale_size(name = "Number of restaurants",
-             breaks = c(1, 500, 2000),
+             breaks = c(1, 500, 3200),
              range = c(0,18))+
   coord_sf(crs = 2154, datum = NA,
-           xlim = st_bbox(mix_31)[c(1,3)],
-           ylim = st_bbox(mix_31)[c(2,4)]
+           xlim = st_bbox(epci_31)[c(1,3)],
+           ylim = st_bbox(epci_31)[c(2,4)]
   ) +
   theme_minimal() +
   theme(panel.background = element_rect(fill = "azure",color=NA)) +
@@ -444,20 +417,29 @@ plot(map_ggplot)
 
 ##### cartography
 ```{r, nm=TRUE, echo=FALSE}
+# Define plot margins
 par(mar = c(0.2, 0.2, 1.4, 0.2), bg = "azure")
-plot(st_geometry(mix_31), border="azure")
-plot(st_geometry(fra), col="ivory", border = "ivory3", xlim = bb[c(1, 3)], 
-     ylim = bb[c(2, 4)],add=TRUE)
-
-choroLayer(mix_31, var = "nb_rest_10000inhab", breaks = bks, col = cols, border = "grey80", lwd = 0.4, 
-           legend.pos = "topleft", legend.title.txt = "Number of restaurants\nfor 10000 inhabitants", 
-           add = TRUE)
-propSymbolsLayer(mix_31, var="nb_of_rest",
-                 col=viridis::viridis(1,alpha=0.8),border=NA,
-                 legend.pos="left", legend.title.txt = "Number of restaurants", add = TRUE)
-layoutLayer(title = "Restaurants", sources = "Insee, 2018", author = "Kim & Tim, 2018", 
-            theme = "green.pal", col = "darkred", coltitle = "white", postitle = "center",
+# Find EPCI bounding box
+bb <- st_bbox(epci_31)
+# Plot France using EPCI boundingbox
+plot(st_geometry(fra), col="ivory", border = "ivory3", 
+     xlim = bb[c(1, 3)], ylim = bb[c(2, 4)])
+# Plot the choropleth layer
+choroLayer(epci_31, var = "nb_rest_10000inhab", 
+           breaks = bks, col = cols, border = "grey80", lwd = 0.5, 
+           legend.pos = "topleft",add = TRUE,
+           legend.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+# Plot proportionnal symbols
+propSymbolsLayer(epci_31, var="nb_of_rest", col="#440170",border=NA, 
+                 legend.pos="left", inches=0.4, add = TRUE,
+                 legend.title.txt = "Number of restaurants")
+# Add a layout layer
+layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
+            author = "Kim & Tim, 2018", 
+            theme = "green.pal", col = "darkred", 
+            coltitle = "white", postitle = "center",
             frame = TRUE, scale = 10)
+# Add a north (south) arrow
 north(pos = "topright", south = TRUE)
 ```
 
@@ -468,17 +450,17 @@ library(ggplot2)
 map_ggplot <- ggplot() +
   geom_sf(data = fra, colour = "ivory3",
           fill = "ivory") +
-  geom_sf(data = mix_31, aes(fill = typo), colour = "grey80") +
+  geom_sf(data = epci_31, aes(fill = typo), colour = "grey80") +
   scale_fill_manual(name = "Number of restaurants\nfor 10000 inhabitants",
                     values = cols, na.value = "#303030")+
-   geom_sf(data = mix_31 %>%  st_centroid(),
-           aes(size= nb_of_rest), color = viridis::viridis(1,alpha=0.8), show.legend = 'point')+
+   geom_sf(data = epci_31 %>%  st_centroid(),
+           aes(size= nb_of_rest), color = "#440154CC", show.legend = 'point')+
   scale_size(name = "Number of restaurants",
-             breaks = c(1, 500, 2000),
+             breaks = c(1, 500, 3200),
              range = c(0,18))+
   coord_sf(crs = 2154, datum = NA,
-           xlim = st_bbox(mix_31)[c(1,3)],
-           ylim = st_bbox(mix_31)[c(2,4)]
+           xlim = st_bbox(epci_31)[c(1,3)],
+           ylim = st_bbox(epci_31)[c(2,4)]
   ) +
   theme_minimal() +
   theme(panel.background = element_rect(fill = "azure",color=NA)) +
@@ -486,17 +468,164 @@ map_ggplot <- ggplot() +
       title = "Restaurants",
       caption = "Insee, 2018\nKim & Tim, 2018"
   )
-
 plot(map_ggplot)
 ```
 
+
 #### {}
+
+
+```{block, box.title = "3", box.body = list(fill = "white"), box.icon = "fa-star"}
+What other solution could we use to display these two variable on the same map? 
+```
+
+```{block, opts.label = "clues"}
+The `propSymbolsChoroLayer` function allows you to draw colored proportional circles.
+```
+
+```{r, nm=TRUE, eval=FALSE, echo=TRUE, solution=TRUE}
+# Define plot margins
+par(mar = c(0.2, 0.2, 1.4, 0.2), bg = "azure")
+# Find EPCI bounding box
+bb <- st_bbox(epci_31)
+# Plot France using EPCI boundingbox
+plot(st_geometry(fra), col="ivory", border = "ivory3", 
+     xlim = bb[c(1, 3)], ylim = bb[c(2, 4)])
+# Plot EPCI
+plot(st_geometry(epci_31), col="ivory3", border = "ivory2", add=T)
+# Plot the choropleth layer
+propSymbolsChoroLayer(epci_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab", 
+           breaks = bks, col = cols, border = "grey80", lwd = 0.5, 
+           legend.var.pos = "topleft", legend.var2.pos = "left",
+           add = TRUE, inches = 0.4,
+           legend.var.title.txt = "Number of restaurants",
+           legend.var2.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+# Add a layout layer
+layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
+            author = "Kim & Tim, 2018", 
+            theme = "green.pal", col = "darkred", 
+            coltitle = "white", postitle = "center",
+            frame = TRUE, scale = 10)
+# Add a north (south) arrow
+north(pos = "topright", south = TRUE)
+
+```
+
+```{r, nm=TRUE, echo=FALSE}
+# Define plot margins
+par(mar = c(0.2, 0.2, 1.4, 0.2), bg = "azure")
+# Find EPCI bounding box
+bb <- st_bbox(epci_31)
+# Plot France using EPCI boundingbox
+plot(st_geometry(fra), col="ivory", border = "ivory3", 
+     xlim = bb[c(1, 3)], ylim = bb[c(2, 4)])
+# Plot EPCI
+plot(st_geometry(epci_31), col="ivory3", border = "ivory2", add=T)
+# Plot the choropleth layer
+propSymbolsChoroLayer(epci_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab", 
+           breaks = bks, col = cols, border = "grey80", lwd = 0.5, 
+           legend.var.pos = "topleft", legend.var2.pos = "left",
+           add = TRUE, inches = 0.4,
+           legend.var.title.txt = "Number of restaurants",
+           legend.var2.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+# Add a layout layer
+layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
+            author = "Kim & Tim, 2018", 
+            theme = "green.pal", col = "darkred", 
+            coltitle = "white", postitle = "center",
+            frame = TRUE, scale = 10)
+# Add a north (south) arrow
+north(pos = "topright", south = TRUE)
+```
+
+
+
+```{block, box.title = "4", box.body = list(fill = "white"), box.icon = "fa-star"}
+Display the number of restaurants and the number of restaurants per 10,000 inhabitants at the commune and EPCI scales. The two maps displayed side by side should be as much comparable as possible.
+```
+
+
+```{r, nm=TRUE, eval=TRUE, echo=TRUE, solution=TRUE, fig.width=10}
+library(sf)
+library(cartography)
+library(dplyr)
+# Import data
+fra <- st_read("../data/fra.shp", quiet = TRUE)
+epci_31 <- readRDS("../data/epci_31.rds")
+com_31 <- readRDS("../data/com_31.rds")
+
+# Create the variable
+epci_31$nb_rest_10000inhab <- 10000 * epci_31$nb_of_rest / epci_31$P14_POP
+com_31$nb_rest_10000inhab <- 10000 * com_31$nb_of_rest / com_31$P14_POP
+
+# Define breaks for communes (we will use the same breaks for both maps)
+bks_com <- getBreaks(v = com_31$nb_rest_10000inhab[com_31$nb_of_rest>0], 
+                     method = "quantile", nclass = 6)
+# Define color palette
+cols <- carto.pal("wine.pal", length(bks_com)-1)
+
+# Define plot margins
+par(mar = c(0, 0.1, 1.2, 0.1), bg = "azure", mfrow = c(1,2))
+# Find EPCI bounding box
+bb <- st_bbox(epci_31)
+# Plot France using EPCI boundingbox
+plot(st_geometry(fra), col="ivory", border = "ivory3", 
+     xlim = bb[c(1, 3)], ylim = bb[c(2, 4)])
+# Plot EPCI
+plot(st_geometry(epci_31), col="ivory3", border = "ivory2", add=T)
+# Plot the choropleth layer
+propSymbolsChoroLayer(epci_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab", 
+           breaks = bks_com, col = cols, border = "ivory3",lwd = 0.6, 
+           legend.var.pos = "bottomright", legend.var2.pos = "n",
+           add = TRUE, inches = 0.5,
+           legend.var.title.txt = "Number of restaurants")
+# Add a layout layer
+layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
+            author = "Kim & Tim, 2018", 
+            theme = "green.pal", col = "darkred", 
+            coltitle = "white", postitle = "center",
+            frame = FALSE, scale = NULL)
+
+
+bb <- st_bbox(epci_31)
+# Plot France using EPCI boundingbox
+plot(st_geometry(fra), col="ivory", border = "ivory3", 
+     xlim = bb[c(1, 3)], ylim = bb[c(2, 4)])
+# Plot EPCI
+plot(st_geometry(com_31), col="ivory3", border = "ivory2",lwd = .5, add=T)
+# Plot the choropleth layer
+propSymbolsChoroLayer(com_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab", 
+           breaks = bks_com, col = cols, border = "ivory3",lwd = 0.6, 
+           fixmax = max(epci_31$nb_of_rest),
+           legend.var.pos = "n", legend.var2.pos = "bottom",
+           add = TRUE, inches = 0.5, legend.var2.values.rnd = 0,
+           legend.var2.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+# Add a layout layer
+layoutLayer(title = "Restaurants", sources = "", 
+            author = "", 
+            theme = "green.pal", col = "darkred", 
+            coltitle = "white", postitle = "center",
+            frame = FALSE, scale = 10)
+# Add a north (south) arrow
+north(pos = "topright", south = TRUE)
+
+
+```
+
+
+
+
+
+
+
+
+
 
 # Exercise 3 : Smooth Density analysis of restaurants in Haute-Garonne
 
-
-1. Load the dataset ‘sir_31’ used previously and map the more than 4,000 restaurants of department 31 with the `mapview` package. Try using different parameters to customize your map.
-
+```{block, box.title = "1", box.body = list(fill = "white"), box.icon = "fa-star"}
+Load the dataset ‘sir_31’ used previously and map the more than 4,000 restaurants of department 31 with the `mapview` package. Try using different parameters to customize your map.
+```
 
 ```{block, opts.label = "information"}
 For example, you can use the `map.types`, `col.regions`, `label`, `color`, `legend`, `layer.name`, `homebutton`, `lwd` ... parameters of the `mapview` function.
@@ -528,7 +657,11 @@ mapview(sir_31, map.types = "OpenStreetMap",
         homebutton = FALSE, lwd = 0.5) 
 ```
 
-2. Load the layer ‘iris_31’ used previously. Apply the `pt_in_grid` function below on the SIRENE data and on the iris of the department 31 to create a grid called ‘grid’ and count points in it. Use a 2km cellsize. 
+
+```{block, box.title = "2", box.body = list(fill = "white"), box.icon = "fa-star"}
+Load the layer ‘iris_31’ used previously. Apply the `pt_in_grid` function below on the SIRENE data and on the iris of the department 31 to create a grid called ‘grid’ and count points in it. Use a 2km cellsize. 
+```
+
 
 ```{r, opts.label = "information"}
 pt_in_grid <- function(feat, adm, cellsize = 50){
@@ -548,8 +681,10 @@ iris_31 <- readRDS("../data/iris_31.rds")
 grid <- pt_in_grid(sir_31, iris_31, 2000)
 ```
 
-3. Simply use the `plot` instruction to plot the grid. Then, using the `choroLayer` function of the `cartography` package, plot the number of restaurants per kilometer (called ‘n’) in each box of the grid. What observation can you make concerning the readability of the map?
 
+```{block, box.title = "3", box.body = list(fill = "white"), box.icon = "fa-star"}
+Simply use the `plot` instruction to plot the grid. Then, using the `choroLayer` function of the `cartography` package, plot the number of restaurants per kilometer (called ‘n’) in each box of the grid. What observation can you make concerning the readability of the map?
+```
 
 ```{r, sm=TRUE, echo=TRUE, eval=TRUE, solution=TRUE}
 # default plot
@@ -602,10 +737,11 @@ layoutLayer(title = "Restaurant Distribution in Haute-Garonne", scale = 5,
 The map is not very readable because of the choice of the discretization.
 ```
 
-4. Plot the distribution of the number of restaurants per box in the grid. What do you notice and what solution can you suggest? 
+```{block, box.title = "4", box.body = list(fill = "white"), box.icon = "fa-star"}
+Plot the distribution of the number of restaurants per box in the grid. What do you notice and what solution can you suggest? 
+```
 
-```{r, sm=TRUE, eval=TRUE, echo=TRUE, solution=TRUE}
-par(opar)
+```{r, eval=TRUE, echo=TRUE, solution=TRUE}
 hist(grid$n[grid$n>0], 150)
 ```
 
@@ -613,7 +749,9 @@ hist(grid$n[grid$n>0], 150)
 The distribution is highly dissymetric. We could use instead a geometric progression classification.
 ```
 
-5. Try to make a more readable map.
+```{block, box.title = "5", box.body = list(fill = "white"), box.icon = "fa-star"}
+Try to make a more readable map.
+```
 
 ```{block, opts.label = "clues"}
 Test the `method = 'geom'` and `nclass = 9` parameters of the `cartography::getBreaks` function
@@ -655,8 +793,9 @@ layoutLayer(title = "Restaurant Distribution in Haute-Garonne", scale = 5,
 ```
 
 
-6. In order to make the result even more meaningful, we will now make a smoothed map. You can use the `compute_kde` function below.
-
+```{block, box.title = "6", box.body = list(fill = "white"), box.icon = "fa-star"}
+In order to make the result even more meaningful, we will now make a smoothed map. You can use the `compute_kde` function below.
+```
 
 ```{r, opts.label = "information"}
 library(spatstat)
@@ -727,7 +866,9 @@ layoutLayer(title = "Smoothed Density of Restaurants in Haute-Garonne", scale = 
             author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
-7. Try to improve the map resolution.
+```{block, box.title = "7", box.body = list(fill = "white"), box.icon = "fa-star"}
+Try to improve the map resolution.
+```
 
 ```{r, nm=TRUE, eval=FALSE, solution=TRUE}
 x <- compute_kde(feat = sir_31, adm = iris_31, sigma = 2000, res = 500)
@@ -765,7 +906,10 @@ layoutLayer(title = "Smoothed Density of Restaurants in Haute-Garonne", scale = 
             author = "Kim & Tim", sources = "INSEE - 2018, Sirene - 2018")
 ```
 
-8. Would we have obtained the same smoothing for this department if we had kept the restaurants of the bordering departments?
+```{block, box.title = "8", box.body = list(fill = "white"), box.icon = "fa-star"}
+Would we have obtained the same smoothing for this department if we had kept the restaurants of the bordering departments? Why?
+```
+
 
 ```{block, solution = TRUE}
 No. The borders would have been different. 
@@ -826,7 +970,7 @@ The following parameters work: `cellsize = 1750`, `k = 400` and `threshold = 0.0
 
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
-com_31 <- readRDS("../data/com_31.rds")
+com_31 <- readRDS("./data/com_31.rds")
 
 library(linemap)
 grid <- getgrid(x = com_31, cellsize = 1750, var = "nb_of_rest")
@@ -840,11 +984,13 @@ linemap(x = grid, var = "nb_of_rest", k = 400, threshold = 0.01,
 com_31 <- readRDS("../data/com_31.rds")
 
 library(linemap)
-grid <- getgrid(x = st_transform(com_31, crs=st_crs(occitanie)), cellsize = 1750, var = "nb_of_rest")
-plot(sf::st_geometry(st_transform(com_31, crs=st_crs(occitanie))), col="ivory1", border = NA)
+grid <- getgrid(x = com_31, cellsize = 1750, var = "nb_of_rest")
+plot(sf::st_geometry(com_31), col="ivory1", border = NA)
 opar <- par(mar=c(0,0,0,0), bg = "ivory2")
-linemap(x = grid, var = "nb_of_rest", k = 400, threshold = 0.00001,
+linemap(x = grid, var = "nb_of_rest", k = 400, threshold = 0.01,
         col = "ivory1", border = "ivory4", lwd = 0.6, add = TRUE)
+
+
 library(dplyr) #because select is also in raster package and bugs if CACHE = TRUE
 ```
 
