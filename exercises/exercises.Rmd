@@ -3,8 +3,8 @@ title: "Let's Practice Geovisualization and Spatial Analysis "
 author: "Kim Antunez & Timothée Giraud"
 date: "Massive spatial data: challenges in acquisition, treatment and use for territories"
 output:
-  unilur::tutorial_html_solution:
-  #html_document:
+  #unilur::tutorial_html_solution:
+  html_document:
     toc: true
     toc_float: false
     toc_depth: 1
@@ -302,12 +302,11 @@ propSymbolsLayer(epci_31, var = "nb_of_rest", inches = 0.2)
 #Saving objects for following exercises
 #saveRDS(object = epci_31, file = "../data/epci_31.rds")
 #saveRDS(object = com_31, file = "../data/com_31.rds")
-#saveRDS(object = mix_31, file = "../data/mix_31.rds")
 ```
 
 # Exercise 2 : Maps with cartography and ggplot2 packages
 
-We would like here to design EPCI maps that combine the number of restaurants and the number of restaurants per 10000 inhabitants. 
+We would like here to design EPCI maps that combine the number of restaurants and the number of restaurants per 10,000 inhabitants. 
 
 
 
@@ -319,7 +318,7 @@ Data preparation:
 create a variable called *nb_rest_10000inhab* which corresponds to the number of restaurants per 10,000 inhabitants in each territory.
 * Create a vector of quantiles breaks of the *nb_rest_10000inhab* variable.
 * Create the vector colors which corresponds to a the number of classes defined earlier.
-* Finally, add  a variable called *typo* to 'epci_31' which indicates the class of the territory according to the discretization contained in *bks* for the  *nb_rest_10000inhab* variable (this is needed for ggplot2 maps.
+* Finally, add  a variable called *typo* to 'epci_31' which indicates the class of the territory according to the discretization contained in *bks* for the  *nb_rest_10000inhab* variable (this is needed for ggplot2 maps).
 ```
 
 ```{block, opts.label = "information"}
@@ -366,7 +365,7 @@ plot(st_geometry(fra), col="ivory", border = "ivory3",
 choroLayer(epci_31, var = "nb_rest_10000inhab", 
            breaks = bks, col = cols, border = "grey80", lwd = 0.5, 
            legend.pos = "topleft",add = TRUE,
-           legend.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+           legend.title.txt = "Number of restaurants\nfor 10,000 inhabitants")
 # Plot proportionnal symbols
 propSymbolsLayer(epci_31, var="nb_of_rest", col="#440170",border=NA, 
                  legend.pos="left", inches=0.4, add = TRUE,
@@ -390,7 +389,7 @@ map_ggplot <- ggplot() +
   geom_sf(data = fra, colour = "ivory3",
           fill = "ivory") +
   geom_sf(data = epci_31, aes(fill = typo), colour = "grey80") +
-  scale_fill_manual(name = "Number of restaurants\nfor 10000 inhabitants",
+  scale_fill_manual(name = "Number of restaurants\nfor 10,000 inhabitants",
                     values = cols, na.value = "#303030")+
    geom_sf(data = epci_31 %>%  st_centroid(),
            aes(size= nb_of_rest), color = "#440154CC", show.legend = 'point')+
@@ -428,7 +427,7 @@ plot(st_geometry(fra), col="ivory", border = "ivory3",
 choroLayer(epci_31, var = "nb_rest_10000inhab", 
            breaks = bks, col = cols, border = "grey80", lwd = 0.5, 
            legend.pos = "topleft",add = TRUE,
-           legend.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+           legend.title.txt = "Number of restaurants\nfor 10,000 inhabitants")
 # Plot proportionnal symbols
 propSymbolsLayer(epci_31, var="nb_of_rest", col="#440170",border=NA, 
                  legend.pos="left", inches=0.4, add = TRUE,
@@ -451,7 +450,7 @@ map_ggplot <- ggplot() +
   geom_sf(data = fra, colour = "ivory3",
           fill = "ivory") +
   geom_sf(data = epci_31, aes(fill = typo), colour = "grey80") +
-  scale_fill_manual(name = "Number of restaurants\nfor 10000 inhabitants",
+  scale_fill_manual(name = "Number of restaurants\nfor 10,000 inhabitants",
                     values = cols, na.value = "#303030")+
    geom_sf(data = epci_31 %>%  st_centroid(),
            aes(size= nb_of_rest), color = "#440154CC", show.legend = 'point')+
@@ -476,7 +475,7 @@ plot(map_ggplot)
 
 
 ```{block, box.title = "3", box.body = list(fill = "white"), box.icon = "fa-star"}
-What other solution could we use to display these two variable on the same map? 
+What other solution could we use to display these two variable on the same map? Try it using the `cartography` package.
 ```
 
 ```{block, opts.label = "clues"}
@@ -499,7 +498,7 @@ propSymbolsChoroLayer(epci_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab",
            legend.var.pos = "topleft", legend.var2.pos = "left",
            add = TRUE, inches = 0.4,
            legend.var.title.txt = "Number of restaurants",
-           legend.var2.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+           legend.var2.title.txt = "Number of restaurants\nfor 10,000 inhabitants")
 # Add a layout layer
 layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
             author = "Kim & Tim, 2018", 
@@ -527,7 +526,7 @@ propSymbolsChoroLayer(epci_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab",
            legend.var.pos = "topleft", legend.var2.pos = "left",
            add = TRUE, inches = 0.4,
            legend.var.title.txt = "Number of restaurants",
-           legend.var2.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+           legend.var2.title.txt = "Number of restaurants\nfor 10,000 inhabitants")
 # Add a layout layer
 layoutLayer(title = "Restaurants", sources = "Insee, 2018", 
             author = "Kim & Tim, 2018", 
@@ -541,7 +540,7 @@ north(pos = "topright", south = TRUE)
 
 
 ```{block, box.title = "4", box.body = list(fill = "white"), box.icon = "fa-star"}
-Display the number of restaurants and the number of restaurants per 10,000 inhabitants at the commune and EPCI scales. The two maps displayed side by side should be as much comparable as possible.
+Using the `cartography` package, display the number of restaurants and the number of restaurants per 10,000 inhabitants at the municipalities and EPCI scales. The two maps displayed side by side should be as much comparable as possible.
 ```
 
 
@@ -558,7 +557,7 @@ com_31 <- readRDS("../data/com_31.rds")
 epci_31$nb_rest_10000inhab <- 10000 * epci_31$nb_of_rest / epci_31$P14_POP
 com_31$nb_rest_10000inhab <- 10000 * com_31$nb_of_rest / com_31$P14_POP
 
-# Define breaks for communes (we will use the same breaks for both maps)
+# Define breaks for municipalities (we will use the same breaks for both maps)
 bks_com <- getBreaks(v = com_31$nb_rest_10000inhab[com_31$nb_of_rest>0], 
                      method = "quantile", nclass = 6)
 # Define color palette
@@ -599,7 +598,7 @@ propSymbolsChoroLayer(com_31, var = "nb_of_rest", var2 = "nb_rest_10000inhab",
            fixmax = max(epci_31$nb_of_rest),
            legend.var.pos = "n", legend.var2.pos = "bottom",
            add = TRUE, inches = 0.5, legend.var2.values.rnd = 0,
-           legend.var2.title.txt = "Number of restaurants\nfor 10000 inhabitants")
+           legend.var2.title.txt = "Number of restaurants\nfor 10,000 inhabitants")
 # Add a layout layer
 layoutLayer(title = "Restaurants", sources = "", 
             author = "", 
