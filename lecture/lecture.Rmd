@@ -47,8 +47,6 @@ knit_hooks$set(sm = function(before, options, envir){
 
 # The R Spatial Ecosystem {.tabset}
 
-A few main packages are dedicated to spatial data handling like import/export, display, geoprocessing, spatial stastistics. 
-
 ## "Historical" Packages
 
 * `rgdal`: interface between R and [GDAL](http://www.gdal.org/) (Geospatial Data Abstraction Library) and [PROJ4](https://github.com/OSGeo/proj.4) libraries: raster / vector geospatial data formats and coordinate transformation.
@@ -77,14 +75,14 @@ These packages are still widely used.
 </br>
 **sf objects data structure:**
 
-<img src="./img/sf.png" alt="format sf" width="800">
+<img src="img/sf.png" alt="format sf" width="800">
 
 ## Using `sf` {.tabset}
 
 ### Data Import {.tabset}
 ```{r}
 library(sf)
-mtq <- st_read("../data/mtq/martinique.shp")
+mtq <- st_read("data/mtq/martinique.shp")
 ```
 
 
@@ -170,14 +168,35 @@ plot(st_geometry(mtq_v), col='lightblue')
 ```
 
 
+## Other Packages
+
+[CRAN task views](https://cran.r-project.org/web/views/) aim to provide some guidance which packages on CRAN are relevant for tasks related to a certain topic.
+
+[CRAN Task View: Analysis of Spatial Data](https://CRAN.R-project.org/view=Spatial):  
+
+- Classes for spatial data   
+- Handling spatial data   
+- Reading and writing spatial data   
+- Visualisation  
+- Point pattern analysis  
+- Geostatistics  
+- Disease mapping and areal data analysis  
+- Spatial regression  
+- Ecological analysis  
+
+
 
 # Maps with R  {.tabset}
+
+
+## Overview
 
 Several solutions are available:
 
 - `ggplot2` users can have a look to `ggplot2` mapping features (geom_sf) that can mix nicely with `ggspatial`.  
 - For more advanced mapping features in a *ggplot2-like* syntax have a look to `tmap`
-- `cartography` is based on base graphics and allow most of basic and advanced cartographic representations.  <small><small>Full disclosure: the speaker is the maintainer of cartography.</small></small> 
+- `cartography` is based on base graphics and allow most of basic and advanced cartographic representations.   
+<small><small>Full disclosure: one of the speakers is the maintainer of `cartography`.</small></small> 
 
 Here we will focus on `cartography` and do small examples with `ggplot2`. 
 
@@ -187,15 +206,18 @@ Here we will focus on `cartography` and do small examples with `ggplot2`.
 
 ```{r, eval=TRUE}
 library(sf)
-# Import geo layer
-sm <- st_read(dsn = "../data/rhone/seine_maritime.geojson", stringsAsFactors = F, quiet=TRUE)
-dep <- st_read(dsn = "../data/rhone/dep.geojson", stringsAsFactors = F, quiet=TRUE)
+# Import geo layers
+## Communes of Seine Maritime
+sm <- st_read(dsn = "data/dep76/seine_maritime.geojson", stringsAsFactors = F, quiet=TRUE)
+## French departements
+dep <- st_read(dsn = "data/dep76/dep.geojson", stringsAsFactors = F, quiet=TRUE)
+
 # change projection (lambert93)
 sm <- st_transform(sm, 2154)
 dep <- st_transform(dep, 2154)
 
 # Import dataset  
-csp <- read.csv("../data/rhone/data_seine_maritime.csv")
+csp <- read.csv("data/dep76/data_seine_maritime.csv")
 # merge geolayer and dataset
 sm <- merge(sm, csp, by="INSEE_COM", all.x=TRUE)
 ```
@@ -203,8 +225,8 @@ sm <- merge(sm, csp, by="INSEE_COM", all.x=TRUE)
 
 ### Proportional symbols
 ```{r}
+# (Very) simple map
 library(cartography)
-
 plot(st_geometry(sm))
 propSymbolsLayer(sm, var = "act")
 title("Active Population")
@@ -213,20 +235,25 @@ title("Active Population")
 
 ```{r, fig.height=4.75}
 # Custom map of active population
-par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
+par(mar=c(0.2,0.2,1.4,0.2))
 bb <- st_bbox(sm)
-plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+# the bbox is used to center the map on the Seine Maritime depatement
+plot(st_geometry(dep), col = "ivory", border="ivory3",  bg="azure", 
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
 plot(st_geometry(sm), col="cornsilk2", border = NA, lwd = 0.5, add=T)
-propSymbolsLayer(sm, var = "act", col="darkblue", inches = 0.5, 
+propSymbolsLayer(sm, var = "act", col="darkblue", inches = 0.6, 
                  border = "white", lwd=0.7, symbols = "square",
                  legend.style = "e", legend.pos="topleft",
                  legend.title.txt = "Labor Force\n(2014)", 
                  legend.values.rnd = 0)
+# Scale Bar
 barscale(size = 10)
+# North Arrow
 north(pos = "topright", col = "darkblue")
+# Full layout
 layoutLayer(title = "Workforce in Seine-Maritime", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
-            col = "darkblue", coltitle = "white", 
+            col = "darkblue", coltitle = "white", tabtitle = TRUE, 
             frame = TRUE, scale = NULL, north = FALSE)
 
 
@@ -236,24 +263,32 @@ layoutLayer(title = "Workforce in Seine-Maritime",
 ### Typology Map
 
 ```{r, fig.height=4.75}
-par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
-plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+# To display qualitative data
+# modalities
+mod <- c("agr", "art", "cad", "int", "emp", "ouv")
+# labels in the legedn
+modlab <- c("Agriculteurs", "Artisans","Cadres", "Prof. Inter.", "Employés", "Ouvriers")
+# colors
+cols <- c("#e3b4a2", "#a2d5d6", "#debbd4", "#b5dab6", "#afc2e3", "#e9e2c1")
+
+par(mar=c(0.2,0.2,1.4,0.2))
+plot(st_geometry(dep), col = "ivory", border="ivory3", bg="azure",
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
 typoLayer(sm, var = "cat", 
           border = "ivory", lwd = 0.5, 
-          legend.values.order = c("agr", "art", "cad", "int", "emp", "ouv"),
-          col =c("#e3b4a2", "#a2d5d6", "#debbd4", "#b5dab6", "#afc2e3", "#e9e2c1"),
+          legend.values.order = mod,
+          col = cols,
           add=TRUE, legend.pos = "n")
-
-legendTypo(title.txt = "Dominant socio-professional Category", 
-           col = c("#e3b4a2", "#a2d5d6", "#debbd4", "#b5dab6", "#afc2e3", "#e9e2c1"), 
-           categ = c("Agriculteurs", "Artisans","Cadres", 
-                     "Prof. Inter.", "Employés", "Ouvriers"), 
+# functions are dedicated to legend display
+legendTypo(title.txt = "Dominant Socio-Professional\nCategory", 
+           col = cols, 
+           categ = modlab, 
            nodata = F)
 barscale(size = 10)
 north(pos = "topright", col = "darkblue")
 layoutLayer(title = "Workforce Distribution in Seine-Maritime", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
-            col = "darkblue", coltitle = "white", 
+            col = "darkblue", coltitle = "white", tabtitle = TRUE,
             frame = TRUE, scale = NULL, north = FALSE)
 
 ```
@@ -262,45 +297,55 @@ layoutLayer(title = "Workforce Distribution in Seine-Maritime",
 ### Choropleth Map
 
 ```{r, fig.height=4.75}
+# Compute the share of "managers" in the active population
 sm$pcad <- 100 * sm$cad / sm$act
 
+# The getBreaks() function is used to classify the variable
 bks <- getBreaks(v = sm$pcad, method = "quantile", nclass = 6)
+
+# The carto.pal() function give access to various cartographic color palettes
 cols <- carto.pal("green.pal", 3,"wine.pal",3)
-par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
-plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+
+# Create the map
+par(mar=c(0.2,0.2,1.4,0.2))
+plot(st_geometry(dep), col = "ivory", border="ivory3", bg="azure",
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
 choroLayer(sm, var = "pcad", breaks = bks, 
            col = cols, border = "grey80", 
+           legend.values.rnd = 1,
            lwd = 0.4, legend.pos = "topleft", 
            legend.title.txt = "Share of managers (%)", add=T)
+# Add a layout
 layoutLayer(title = "Managers", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
-            postitle = "center",
+            tabtitle = TRUE, 
             frame = TRUE, scale = 10)
-north(pos = "topright", south = TRUE)
-
+north(pos = "topright")
 
 ```
+
+
+We could create the same map on a cartogram based on the active population stock. 
 
 ```{r, fig.height=4.75, cache = T}
 library(cartogram)
 sm_c1 <- cartogram_cont(sm, "act", 3)
-sm$pcad <- 100 * sm$cad / sm$act
-
-bks <- getBreaks(v = sm$pcad, method = "quantile", nclass = 6)
-cols <- carto.pal("green.pal", 3,"wine.pal",3)
-par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
-plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+par(mar=c(0.2,0.2,1.4,0.2))
+plot(st_geometry(dep), col = "ivory", border="ivory3", bg="azure", 
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
 choroLayer(sm_c1, var = "pcad", breaks = bks, 
-           col = cols, border = "grey80", 
+           col = cols, border = "grey80",            
+           legend.values.rnd = 1,
            lwd = 0.4, legend.pos = "topleft", 
            legend.title.txt = "Share of managers (%)", add=T)
+# Add a layout
 layoutLayer(title = "Managers", 
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
-            postitle = "center",
+            tabtitle = TRUE, 
             frame = TRUE, scale = 10)
 north(pos = "topright", south = TRUE)
 ```
@@ -309,16 +354,15 @@ north(pos = "topright", south = TRUE)
 ### Gridded Map
 These maps may allow to hide or, at least, diminish the MAUP. 
 ```{r, fig.height=4.75, cache = T}
-sqrt(quantile(st_area(sm), .9))
-```
-
-
-```{r, fig.height=4.75, cache = T}
-grid <- getGridLayer(x = sm, cellsize = 3900*3900, 
+# Create a grid based on sm (cell area = 4 square km)
+grid <- getGridLayer(x = sm, cellsize = 4000*4000, 
                      type = "regular", var = c('cad', 'act'))
-grid$pcad <- 100*grid$cad/grid$act
-par(mar=c(0.2,0.2,1.4,0.2), bg="azure")
-plot(st_geometry(dep), col = "ivory", border="ivory3", xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+# Compute the share of managers
+grid$pcad <- 100 * grid$cad / grid$act
+# Display the map as choropleth layer
+par(mar=c(0.2,0.2,1.4,0.2))
+plot(st_geometry(dep), col = "ivory", border="ivory3", bg="azure", 
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
 choroLayer(grid, var = "pcad", breaks=bks, 
            col = cols, border = "grey80", 
            lwd = 0.4, legend.pos = "topleft", 
@@ -327,14 +371,49 @@ layoutLayer(title = "Managers",
             sources = "Insee, 2018", author = "Kim & Tim, 2018", 
             theme = "green.pal", 
             col = "darkred", coltitle = "white", 
-            postitle = "center",
+            tabtitle = TRUE,
             frame = TRUE, scale = 10)
-north(pos = "topright", south = TRUE)
+north(pos = "topright")
+
+```
+
+It is also possible to create hexagonal grids.
+
+```{r, fig.height=4.75, cache = T}
+# Create a grid based on sm (cell area = 4 square km)
+grid <- getGridLayer(x = sm, cellsize = 4000*4000, 
+                     type = "hexagonal", var = c('cad', 'act'))
+# Compute the share of managers
+grid$pcad <- 100 * grid$cad / grid$act
+# Display the map as choropleth layer
+par(mar=c(0.2,0.2,1.4,0.2))
+plot(st_geometry(dep), col = "ivory", border="ivory3", bg="azure", 
+     xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
+choroLayer(grid, var = "pcad", breaks=bks, 
+           col = cols, border = "grey80", 
+           lwd = 0.4, legend.pos = "topleft", 
+           legend.title.txt = "Share of managers\n(en %)", add=T)
+layoutLayer(title = "Managers", 
+            sources = "Insee, 2018", author = "Kim & Tim, 2018", 
+            theme = "green.pal", 
+            col = "darkred", coltitle = "white", 
+            tabtitle = TRUE,
+            frame = TRUE, scale = 10)
+north(pos = "topright")
 
 ```
 
 
 ### Smoothed Map
+
+`smoothLayer()` uses functions from package [`SpatialPosition`](https://CRAN.R-project.org/package=SpatialPosition) to computes 
+Stewart's potentials of population.  
+The computation of potentials could be considered as a **spatial interpolation method** 
+such as inverse distance weighted interpolation (IDW) or kernel density estimator. 
+These models aim to estimate unknown values of non-observed points from known 
+values given by measure points. Cartographically speaking, they are often used 
+to get a continuous surface from a set of discrete points. However, Stewart model 
+is mainly a spatial interaction modeling approach, with a possible secondary use for spatial interpolation.  
 
 ```{r, fig.height=4.75, cache = T}
 grid$cad100 <- grid$cad * 100
@@ -345,6 +424,7 @@ smoothLayer(x = grid, var = "cad100", var2 = "act",
             typefct = "exponential", 
             span = 4000, beta = 2, breaks = bks, col = cols,
             legend.pos = "topleft", mask = st_buffer(sm, 0),
+            legend.values.rnd = 2,
             legend.title.txt = "Share of managers* (%)", 
             border = "grey90", lwd = 0.2, add=T)
 layoutLayer(title = "Managers", 
@@ -353,27 +433,39 @@ layoutLayer(title = "Managers",
             col = "darkred", coltitle = "white", 
             postitle = "center",
             frame = TRUE, scale = 10)
-north(pos = "topright", south = TRUE)
-text(x = 518000, y = 6921123,
+north(pos = "topright")
+text(x = 488000, y = 6921000,adj = 0,
      font = 3, cex = 0.8,
-     labels = "*Potential smoothing\n exponential function\n span = 2.5km, beta = 2")
+     labels = "* Potential smoothing\n  exponential function\n  span = 4 km, beta = 2")
+
 ```
+
+
+### Cheat Sheet
+
+The [cheat sheet](http://riatelab.github.io/cartography/vignettes/cheatsheet/cartography_cheatsheet.pdf) displays a quick overview of `cartography`'s main features:  
+
+[<img src="img/cheat_sheet.png" alt="cartography cheat sheet" width="800">](http://riatelab.github.io/cartography/vignettes/cheatsheet/cartography_cheatsheet.pdf)
+
+
+
+
+
 
 ## `ggplot2` {.tabset}
 
 ### Proportional symbols layer
 
 ```{r, fig.height=4.75}
-
 library(ggplot2)
 
 ggplot() +
   geom_sf(data = dep, colour = "ivory3",fill = "ivory") +
   geom_sf(data = sm %>%  st_centroid(),
           
-          aes(size= cad), colour="#E84923CC", show.legend = 'point') +
+          aes(size= act), colour="#E84923CC", show.legend = 'point') +
   scale_size(name = "Active population",
-             breaks = c(100,1000,5000),
+             breaks = c(100,1000,10000),
              range = c(0,20)) +
   coord_sf(crs = 2154, datum = NA,
            xlim = st_bbox(sm)[c(1,3)],
@@ -388,7 +480,6 @@ ggplot() +
 ### Choropleth layer
 
 ```{r, fig.height=4.75}
-
 ggplot() +
   geom_sf(data = dep, colour = "ivory3",fill = "ivory") +
   geom_sf(data = sm, aes(fill = pcad), colour = "grey80") +
@@ -408,30 +499,30 @@ ggplot() +
 
 # Exploration of SIRENE & OSM databases for restaurants  {.tabset}
 
-[CRAN Task View: Analysis of Spatial Data](https://CRAN.R-project.org/view=Spatial)
-
 See file data_prep.R for data extraction. 
 
 ```{r}
-# spatial data management
-library(sf)
-# cartography
-library(cartography)
+
 # smooth density computation
 library(spatstat)
 library(raster)
 library(maptools)
-# interactive mapping
-library(mapview)
+
 ```
 
 
 ## Display Points
+
 ```{r, cache=TRUE, fig.width=10}
+# spatial data management
+library(sf)
+# cartography
+library(cartography)
+
 # Load data
-adm <- readRDS("../data/iris_p13.rds")
-feat_sir <- readRDS("../data/sir_p13.rds")
-feat_osm <- readRDS("../data/osm_p13.rds")
+adm <- readRDS("data/iris_p13.rds")
+feat_sir <- readRDS("data/sir_p13.rds")
+feat_osm <- readRDS("data/osm_p13.rds")
 
 # Define margins
 par(mar = c(0,0,1.2,0), mfrow = c(1,2))
@@ -453,13 +544,10 @@ layoutLayer(title = "OSM", sources=paste0(nrow(feat_osm), " restaurants"),
 
 ## Interactive Visualisation
 
-Explore datasets interactively
-
-The default is not bad:
 ```{r, cache=TRUE}
+library(mapview)
 mapview(feat_sir) + mapview(feat_osm, col.regions = "red")
 ```
-
 
 `mapview` allows highly customizable maps:
 
@@ -476,9 +564,9 @@ mapview(feat_sir, map.types = "OpenStreetMap", col.regions = "#940000",
 
 
 
-These maps, as appealing as they seem to be, are not really suitable for displaying geostatistical information.
+These maps, as appealing as they seem to be, are not really suitable for presenting geostatistical information.
 
-Nonetheless they can be really useful for exploratory data analysis. 
+Nonetheless, they can be really useful for exploratory data analysis. 
 
 
 
@@ -616,6 +704,7 @@ barscale(1)
 Define a function that computes smoothed restaurant density (KDE method).
 
 
+
 ```{r, cache=TRUE}
 compute_kde <- function(feat, adm, title, sigma = 100, res = 50){
   # Define an observation window
@@ -690,13 +779,9 @@ plot_kde(x,adm, title = "SIR - Sigma = 250",
 
 
 
-# 
+# <small> reproducibility </small>
 
---------------------------------------------
-
---------------------------------------------
-
-**reproducibility**
+Always share your R and packages configuration !
 
 ```{r}
 sessionInfo()
