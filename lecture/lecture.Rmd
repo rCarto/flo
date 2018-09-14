@@ -371,9 +371,9 @@ ggplot() +
   geom_sf(data = dep, colour = "ivory3",fill = "ivory") +
   geom_sf(data = sm %>%  st_centroid(),
           
-          aes(size= cad), colour="#E84923CC", show.legend = 'point') +
+          aes(size= act), colour="#E84923CC", show.legend = 'point') +
   scale_size(name = "Active population",
-             breaks = c(100,1000,5000),
+             breaks = c(100,1000,10000),
              range = c(0,20)) +
   coord_sf(crs = 2154, datum = NA,
            xlim = st_bbox(sm)[c(1,3)],
