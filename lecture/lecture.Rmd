@@ -20,7 +20,7 @@ options(max.print="75")
 opts_chunk$set(echo=TRUE,
                cache=FALSE, #TRUE
                prompt=FALSE,
-               tidy=TRUE,
+               tidy=FALSE,
                comment=NA,
                message=FALSE,
                warning=FALSE)
@@ -381,15 +381,15 @@ It is also possible to create hexagonal grids.
 
 ```{r, fig.height=4.75, cache = T}
 # Create a grid based on sm (cell area = 4 square km)
-grid <- getGridLayer(x = sm, cellsize = 4000*4000, 
+grid2 <- getGridLayer(x = sm, cellsize = 4000*4000, 
                      type = "hexagonal", var = c('cad', 'act'))
 # Compute the share of managers
-grid$pcad <- 100 * grid$cad / grid$act
+grid2$pcad <- 100 * grid2$cad / grid2$act
 # Display the map as choropleth layer
 par(mar=c(0.2,0.2,1.4,0.2))
 plot(st_geometry(dep), col = "ivory", border="ivory3", bg="azure", 
      xlim = bb[c(1,3)], ylim =  bb[c(2,4)])
-choroLayer(grid, var = "pcad", breaks=bks, 
+choroLayer(grid2, var = "pcad", breaks=bks, 
            col = cols, border = "grey80", 
            lwd = 0.4, legend.pos = "topleft", 
            legend.title.txt = "Share of managers\n(en %)", add=T)
@@ -400,6 +400,8 @@ layoutLayer(title = "Managers",
             tabtitle = TRUE,
             frame = TRUE, scale = 10)
 north(pos = "topright")
+
+
 
 ```
 
@@ -499,19 +501,11 @@ ggplot() +
 
 # Exploration of SIRENE & OSM databases for restaurants  {.tabset}
 
-See file data_prep.R for data extraction. 
-
-```{r}
-
-# smooth density computation
-library(spatstat)
-library(raster)
-library(maptools)
-
-```
-
 
 ## Display Points
+
+See file "data/paris13/data_prep.R" for data extraction. 
+
 
 ```{r, cache=TRUE, fig.width=10}
 # spatial data management
@@ -520,9 +514,9 @@ library(sf)
 library(cartography)
 
 # Load data
-adm <- readRDS("data/iris_p13.rds")
-feat_sir <- readRDS("data/sir_p13.rds")
-feat_osm <- readRDS("data/osm_p13.rds")
+adm <- readRDS("data/paris13/iris_p13.rds")
+feat_sir <- readRDS("data/paris13/sir_p13.rds")
+feat_osm <- readRDS("data/paris13/osm_p13.rds")
 
 # Define margins
 par(mar = c(0,0,1.2,0), mfrow = c(1,2))
@@ -706,6 +700,10 @@ Define a function that computes smoothed restaurant density (KDE method).
 
 
 ```{r, cache=TRUE}
+library(spatstat)
+library(raster)
+library(maptools)
+
 compute_kde <- function(feat, adm, title, sigma = 100, res = 50){
   # Define an observation window
   w <- as.owin(as(adm, "Spatial"))

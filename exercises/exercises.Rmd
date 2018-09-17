@@ -3,8 +3,7 @@ title: "Let's Practice Geovisualization and Spatial Analysis "
 author: "Kim Antunez & Timothée Giraud"
 date: "Massive spatial data: challenges in acquisition, treatment and use for territories"
 output:
-  #unilur::tutorial_html_solution:
-  html_document:
+  unilur::tutorial_html_solution:
     toc: true
     toc_float: false
     toc_depth: 1
@@ -95,8 +94,8 @@ Use the `readRDS` function.
 
 ```{r, solution = TRUE}
 library(sf)
-iris_31 <- readRDS("../data/iris_31.rds")
-# iris_31 <- st_read("../data/iris_31.rds")
+iris_31 <- readRDS("data/iris_31.rds")
+# iris_31 <- st_read("data/iris_31.rds")
 ```
 
 ```{block, solution = TRUE}
@@ -227,7 +226,7 @@ The code of each municipality is not in the ‘sir_31’ database. To create it,
 ```
 
 ```{r, nm=TRUE, solution = TRUE}
-sir_31 <- readRDS("../data/sir_31.rds")
+sir_31 <- readRDS("data/sir_31.rds")
 
 com_31 <- left_join(com_31,
                     sir_31 %>%
@@ -250,7 +249,7 @@ You have to use the database ‘table_MAUP.rds’ to have a match between the mu
 
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
-table_MAUP <- readRDS("../data/table_MAUP.rds") %>% 
+table_MAUP <- readRDS("data/table_MAUP.rds") %>% 
   select(CODGEO,EPCI)
 
 epci_31  <- com_31 %>%
@@ -264,7 +263,7 @@ plot(st_geometry(epci_31))
 
 
 ```{r, nm=TRUE, echo=FALSE}
-table_MAUP <- readRDS("../data/table_MAUP.rds") %>% 
+table_MAUP <- readRDS("data/table_MAUP.rds") %>% 
   select(CODGEO,EPCI)
 
 epci_31  <- com_31 %>%
@@ -300,8 +299,8 @@ propSymbolsLayer(epci_31, var = "nb_of_rest", inches = 0.2)
 
 ```{r, nm=TRUE, echo=FALSE, eval=FALSE}
 #Saving objects for following exercises
-#saveRDS(object = epci_31, file = "../data/epci_31.rds")
-#saveRDS(object = com_31, file = "../data/com_31.rds")
+#saveRDS(object = epci_31, file = "data/epci_31.rds")
+#saveRDS(object = com_31, file = "data/com_31.rds")
 ```
 
 # Exercise 2 : Maps with cartography and ggplot2 packages
@@ -331,8 +330,8 @@ library(sf)
 library(cartography)
 library(dplyr)
 # Import data
-fra <- st_read("../data/fra.shp", quiet = TRUE)
-epci_31 <- readRDS("../data/epci_31.rds")
+fra <- st_read("data/fra.shp", quiet = TRUE)
+epci_31 <- readRDS("data/epci_31.rds")
 # Create the variable
 epci_31$nb_rest_10000inhab <- 10000 * epci_31$nb_of_rest / epci_31$P14_POP
 # Define breaks
@@ -549,9 +548,9 @@ library(sf)
 library(cartography)
 library(dplyr)
 # Import data
-fra <- st_read("../data/fra.shp", quiet = TRUE)
-epci_31 <- readRDS("../data/epci_31.rds")
-com_31 <- readRDS("../data/com_31.rds")
+fra <- st_read("data/fra.shp", quiet = TRUE)
+epci_31 <- readRDS("data/epci_31.rds")
+com_31 <- readRDS("data/com_31.rds")
 
 # Create the variable
 epci_31$nb_rest_10000inhab <- 10000 * epci_31$nb_of_rest / epci_31$P14_POP
@@ -635,7 +634,7 @@ library(mapview)
 library(sf)
 library(cartography)
 
-sir_31 <- readRDS("../data/sir_31.rds")
+sir_31 <- readRDS("data/sir_31.rds")
 mapview(sir_31, map.types = "OpenStreetMap", 
         col.regions = "#940000", 
         label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), 
@@ -648,7 +647,7 @@ library(mapview)
 library(sf)
 library(cartography)
 
-sir_31 <- readRDS("../data/sir_31.rds")
+sir_31 <- readRDS("data/sir_31.rds")
 mapview(sir_31, map.types = "OpenStreetMap", 
         col.regions = "#940000", 
         label = paste(sir_31$L2_NORMALISEE, sir_31$NOMEN_LONG, sep = " - "), 
@@ -675,14 +674,14 @@ pt_in_grid <- function(feat, adm, cellsize = 50){
 
 ```{r, sm=TRUE, solution=TRUE}
 # import
-iris_31 <- readRDS("../data/iris_31.rds")
+iris_31 <- readRDS("data/iris_31.rds")
 # create the grid
 grid <- pt_in_grid(sir_31, iris_31, 2000)
 ```
 
 
 ```{block, box.title = "3", box.body = list(fill = "white"), box.icon = "fa-star"}
-Simply use the `plot` instruction to plot the grid. Then, using the `choroLayer` function of the `cartography` package, plot the number of restaurants per kilometer (called ‘n’) in each box of the grid. What observation can you make concerning the readability of the map?
+Simply use the `plot` instruction to plot the grid. Then, using the `choroLayer` function of the `cartography` package, plot the number of restaurants per kilometer (called ‘n’) in each cells of the grid. What observation can you make concerning the readability of the map?
 ```
 
 ```{r, sm=TRUE, echo=TRUE, eval=TRUE, solution=TRUE}
@@ -916,8 +915,10 @@ No. The borders would have been different.
 
 
 # Exercise 4 : Cartogram
-
+```{block, box.title = "1", box.body = list(fill = "white"), box.icon = "fa-star"}
 Make a cartogram of department 31 at the level of intercommunalities in proportion to the number of restaurants (SIRENE data).
+```
+
 
 ```{block, opts.label = "information"}
 Load the layer ‘epci_31.rds’ from previous exercises and the `cartogram` package. 
@@ -925,7 +926,7 @@ Load the layer ‘epci_31.rds’ from previous exercises and the `cartogram` pac
 
 
 ```{r, nm=TRUE, eval=FALSE, solution = TRUE}
-epci_31 <- readRDS("../data/epci_31.rds")
+epci_31 <- readRDS("data/epci_31.rds")
 
 library(cartogram)
 library(sf)
@@ -938,7 +939,7 @@ plot(st_geometry(cartogramme), col="lightblue")
 
 ##### Normal borders
 ```{r, nm=TRUE, echo=FALSE}
-epci_31 <- readRDS("../data/epci_31.rds")
+epci_31 <- readRDS("data/epci_31.rds")
 
 library(sf)
 plot(st_geometry(epci_31), col="lightblue")
@@ -955,8 +956,9 @@ plot(st_geometry(cartogramme), col="lightblue")
 
 
 # Exercise 5 : Linemap
-
+```{block, box.title = "1", box.body = list(fill = "white"), box.icon = "fa-star"}
 Make a linemap of department 31 at the level of municipalities in proportion to the number of restaurants (SIRENE data).
+```
 
 ```{block, opts.label = "information"}
 Load the map layer ‘com_31.rds’ from previous exercises and the `linemap` package. 
@@ -980,7 +982,7 @@ linemap(x = grid, var = "nb_of_rest", k = 400, threshold = 0.01,
 ```
 
 ```{r, nm=TRUE, echo=FALSE}
-com_31 <- readRDS("../data/com_31.rds")
+com_31 <- readRDS("data/com_31.rds")
 
 library(linemap)
 grid <- getgrid(x = com_31, cellsize = 1750, var = "nb_of_rest")
